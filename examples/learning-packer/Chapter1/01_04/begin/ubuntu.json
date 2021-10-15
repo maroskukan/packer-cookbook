@@ -1,0 +1,9 @@
+{
+    "builders": [{
+        "type":"amazon-ebs",
+        "source_ami": "ami-529fb82a",
+        "instance_type": "t2.micro",
+        "ssh_username": "ubuntu",
+        "ami_name": "packer {{timestamp}}"
+    }]
+}

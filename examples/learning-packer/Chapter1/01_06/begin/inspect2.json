@@ -1,0 +1,48 @@
+{
+    "variables": {
+        "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
+        "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
+        "aws_region": "{{ env `AWS_REGION` }}"
+    },
+    "builders": [
+        {
+            "type": "amazon-ebs",
+            "access_key": "{{user `aws_access_key`}}",
+            "secret_key": "{{user `aws_secret_key`}}",
+            "region": "{{user `aws_region`}}",
+            "source_ami": "ami-0debf1d5c6ecf21b8",
+            "instance_type": "t2.micro",
+            "user_data_file": "./scripts/SetUpWinRM.ps1",
+            "communicator": "winrm",
+            "winrm_username": "Administrator",
+            "winrm_insecure": true,
+            "winrm_use_ssl": true,
+            "ami_name": "packer-windows-{{timestamp}}"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "powershell",
+            "inline": [
+                "Install-WindowsFeature -name Web-Server -IncludeManagementTools"
+            ]
+        },
+        {
+            "type": "windows-restart",
+            "restart_check_command": "powershell -command \"& {Write-Output 'restarted.'}\""
+        },
+        {
+            "type": "powershell",
+            "inline": [
+                "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1 -Schedule",
+                "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\SysprepInstance.ps1 -NoShutdown"
+            ]
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "manifest",
+            "output": "packer-manifest-windows-{{timestamp}}"
+        }
+    ]
+}
