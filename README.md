@@ -14,7 +14,8 @@ Packer automates the creation of customized images in a repeatable manner.
 
 ## Documentation
 
-[Packer Landing Page](https://www.packer.io/)
+- [Packer Landing Page](https://www.packer.io/)
+- [Ubuntu Amazon EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/)
 
 ## Installation
 
