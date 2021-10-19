@@ -1,0 +1,26 @@
+---
+- name: Install Jenkins 
+  hosts: all
+  become: true
+  vars:
+    ssh_use_pam: true # to allow access with our key on ec2
+    jenkins_hostname: localhost
+    ansible_remote_tmp: /tmp/ansible
+    jenkins_plugins: 
+      - github
+      - pipeline
+      - ansicolor
+    pip_install_packages:
+      - name: pytest
+      - name: pytest-testinfra
+
+  pre_tasks:
+    - name: Update apt cache
+      apt: update_cache=true
+
+  roles:
+    - geerlingguy.java
+    - geerlingguy.jenkins
+    - geerlingguy.packer
+    - geerlingguy.ansible
+    - geerlingguy.pip

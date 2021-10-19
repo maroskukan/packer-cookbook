@@ -1,0 +1,10 @@
+# For the requirements.yml
+
+- src: geerlingguy.packer
+- src: geerlingguy.ansible
+
+
+# For the jenkins.yml roles section 
+ 
+    - geerlingguy.packer
+    - geerlingguy.ansible

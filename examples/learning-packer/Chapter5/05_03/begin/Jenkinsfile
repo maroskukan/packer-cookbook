@@ -1,0 +1,23 @@
+ansiColor('xterm') {
+    node {
+        stage('Checkout') {
+            // Get some code from a GitHub repository
+            checkout scm
+        }
+        stage('Setup') {
+
+        }
+        stage('Validate') {
+            
+        }
+        stage('Build') {
+            withCredentials([usernamePassword(credentialsId: 'aws_access_keys', usernameVariable: 'AWS_ACCESS_KEY', passwordVariable: 'AWS_SECRET_KEY')]) {
+            // Run the packer build
+
+            }
+        }
+        stage('Store Artifacts') {
+
+        }
+    }
+}

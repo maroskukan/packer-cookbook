@@ -1,0 +1,20 @@
+---
+- hosts: all
+  become: true
+
+  vars:
+    mysql_packages:
+      - mariadb-client
+      - mariadb-server
+      - python-mysqldb
+    pip_install_packages:
+      - name: pytest
+      - name: pytest-testinfra
+
+  pre_tasks:
+    - name: Update apt cache
+      apt: update_cache=true
+
+  roles:
+    - geerlingguy.mysql
+    - geerlingguy.pip

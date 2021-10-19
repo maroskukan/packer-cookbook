@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: true
+
+  collections:
+    - devsec.hardening
+
+  vars:
+    mysql_packages:
+      - mariadb-client
+      - mariadb-server
+      - python-mysqldb
+
+  roles:
+    - geerlingguy.mysql
+    - devsec.hardening.mysql_hardening

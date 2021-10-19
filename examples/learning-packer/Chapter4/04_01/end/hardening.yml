@@ -1,0 +1,9 @@
+---
+- name: Harden the image
+  hosts: all
+  become: true
+  roles:
+    - dev-sec.os-hardening
+    - dev-sec.ssh-hardening
+  vars:
+    ssh_use_pam: true # to allow access with our key on ec2

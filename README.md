@@ -7,6 +7,8 @@
   - [Architecture](#architecture)
   - [Template Inspection](#template-inspection)
   - [Template Validation](#template-validation)
+  - [Template Building](#template-building)
+  - [Template Debugging](#template-debugging)
 
 ## Introduction
 
@@ -16,6 +18,7 @@ Packer automates the creation of customized images in a repeatable manner.
 
 - [Packer Landing Page](https://www.packer.io/)
 - [Ubuntu Amazon EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/)
+- [Server Hardening Automation](https://dev-sec.io/)
 
 ## Installation
 
@@ -33,7 +36,7 @@ sudo apt-get update && sudo apt-get install packer
 
 ## Architecture
 
-Packer is written in Go language and compiled as single binary for various operating systems (Windows, Linux, macOS). It is modular and very extensible. 
+Packer is written in Go language and compiled as single binary for various operating systems (Windows, Linux, macOS). It is modular and very extensible.
 
 Packer divides the image build process in these main components:
 
@@ -83,4 +86,39 @@ At line 6, column 10 (offset 133):
     6:         "
                ^
 
+```
+
+
+## Template Building
+
+```bash
+packer build ubuntu.json
+```
+
+Variables, can be defined inside the template, inside another file or loaded from system variables.
+
+```bash
+export AWS_ACCESS_KEY=XXXXXXXXXXXXXXXXXXXX
+export AWS_SECRET_KEY=YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+export AWS_REGION=eu-north-1
+```
+
+```json
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
+    "aws_region": "{{ env `AWS_REGION` }}"
+  }
+}
+```
+
+```bash
+
+```
+
+## Template Debugging
+
+```bash
+PACKER_LOG=1 packer build -debug ubuntu.json |& tee debug.txt
 ```

@@ -1,0 +1,14 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - role: nginxinc.nginx
+  post_tasks:
+    - name: Upload website files
+      copy: src=../files/website/ dest=/usr/share/nginx/html/ mode=0644
+
+    - name: Allow all access to tcp port 80
+      ufw:
+        rule: allow
+        port: 80
+        proto: tcp

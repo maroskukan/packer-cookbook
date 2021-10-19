@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: true
+
+  vars:
+    mysql_packages:
+      - mariadb-client
+      - mariadb-server
+      - python-mysqldb
+
+  pre_tasks:
+    - name: Update apt cache
+      apt: update_cache=true
+
+  roles:
+    - geerlingguy.mysql

@@ -1,0 +1,19 @@
+## setup
+
+sh "ansible-galaxy install -r requirements.yml"
+
+
+## validate
+
+sh "packer validate ubuntu.json"
+
+
+## Build
+
+sh "packer build -var 'aws_region=us-west-2' ubuntu.json"
+
+
+## Artifacts
+
+archiveArtifacts 'manifest.json'
+archiveArtifacts 'junit.xml'
