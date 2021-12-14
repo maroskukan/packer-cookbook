@@ -2,6 +2,8 @@
 
 - [Packer Cookbook](#packer-cookbook)
   - [Introduction](#introduction)
+    - [Use Cases](#use-cases)
+    - [Benefits](#benefits)
   - [Documentation](#documentation)
   - [Installation](#installation)
   - [Architecture](#architecture)
@@ -12,7 +14,21 @@
 
 ## Introduction
 
-Packer automates the creation of customized images in a repeatable manner.
+Packer automates the creation of customized images in a repeatable manner. It supports multiple platforms including AWS, Azure, GCP, Openstack, VMware, Docker.
+
+### Use Cases
+
+- Create Golden Images across platforms and environments
+- Establishes an Image Factory Based on New Commits for Continous Delivery
+- Automate Your Monthly Patching For New/Existing Workloads
+- Create Immutable Infrastructure Using Packer in CI/CD Pipeline
+
+### Benefits
+
+- Version Controlled
+- Consistent Images
+- Automates Everything
+
 
 ## Documentation
 
@@ -38,11 +54,14 @@ sudo apt-get update && sudo apt-get install packer
 
 Packer is written in Go language and compiled as single binary for various operating systems (Windows, Linux, macOS). It is modular and very extensible.
 
-Packer divides the image build process in these main components:
+Packer builds images using a tempalte. Templates can be build using either `json` (old) or `hcl2` (recommended for v1.7.0+). 
 
-- Builder
-- Provisioner
-- Post-processor
+Templates defines settings using blocks:
+- Original Image to Use (source)
+- Where to Build the Image (AWS, VMware, Openstack)
+- Files to Upload to the Image (scripts, packages, certificates)
+- Installation and Configuration of the Machine Image
+- Data to Retrieve when Building
 
 ## Template Inspection
 
