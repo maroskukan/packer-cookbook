@@ -14,10 +14,14 @@
     - [Communicators](#communicators)
     - [Variables](#variables)
   - [Installation](#installation)
-  - [Template Inspection](#template-inspection)
-  - [Template Validation](#template-validation)
-  - [Template Building](#template-building)
-  - [Template Debugging](#template-debugging)
+  - [Packer CLI](#packer-cli)
+    - [build](#build)
+    - [fix](#fix)
+    - [fmt](#fmt)
+    - [inspect](#inspect)
+    - [validate](#validate)
+    - [hcl2_upgrade](#hcl2_upgrade)
+  - [Environment Variables](#environment-variables)
 
 ## Introduction
 
@@ -168,82 +172,86 @@ sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(l
 sudo apt-get update && sudo apt-get install packer
 ```
 
-
-## Template Inspection
-
-You can use the `packer inspect <template-file>` command to retrieve information about a template.
-
-```json
-Packer Inspect: JSON mode
-Description:
-
-Kibana Image
-
-Optional variables and their defaults:
-
-  client_id       = {{env `CLIENT_ID`}}
-  client_secret   = {{env `CLIENT_SECRET`}}
-  subscription_id = {{ env `SUBSCRIPTION_ID` }}
-
-Builders:
-
-  azure-arm
-
-Provisioners:
-
-  shell
-
-Note: If your build names contain user variables or template
-functions such as 'timestamp', these are processed at build time,
-and therefore only show in their raw form here.
-```
-
-
-## Template Validation
-
-You can use the `packer validate <template-file>` command to validate an existing template. For example a missing comma can result in the following error.
-
-```json
-Failed to parse file as legacy JSON template: if you are using an HCL template, check your file extensions; they should be either *.pkr.hcl or *.pkr.json; see the docs for more details: https://www.packer.io/docs/templates/hcl_templates. 
-Original error: Error parsing JSON: invalid character '"' after object key:value pair
-At line 6, column 10 (offset 133):
-    5:         "instance_type": "t2.micro"
-    6:         "
-               ^
-
-```
-
-
-## Template Building
+You can optionally enable autocompletion for Packer CLI
 
 ```bash
-packer build ubuntu.json
+packer -autocomplete-install
 ```
 
-Variables, can be defined inside the template, inside another file or loaded from system variables.
+## Packer CLI
+
+Subcommands available in Packer:
+```bash
+Usage: packer [--version] [--help] <command> [<args>]
+
+Available commands are:
+    build           build image(s) from template
+    console         creates a console for testing variable interpolation
+    fix             fixes templates from old versions of packer
+    fmt             Rewrites HCL2 config files to canonical format
+    hcl2_upgrade    transform a JSON template into an HCL2 configuration
+    init            Install missing plugins or upgrade plugins
+    inspect         see components of a template
+    validate        check that a template is valid
+    version         Prints the Packer version
+```
+
+Most of the commands accept or require flags or arguments to execute the desired functionality.
+
+### build
+
+Takes a Packer template and runs all the defined builds to generate the desired artifacts. The build command provides the core functionality of Packer.
 
 ```bash
-export AWS_ACCESS_KEY=XXXXXXXXXXXXXXXXXXXX
-export AWS_SECRET_KEY=YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
-export AWS_REGION=eu-north-1
+packer build base-image.pkr.hcl
 ```
 
-```json
-{
-  "variables": {
-    "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
-    "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
-    "aws_region": "{{ env `AWS_REGION` }}"
-  }
-}
+Important arguments:
+- -debug - enables debug mode for step-by-step troubleshooting
+- -var - sets a variable in the Packer template
+- -var-file - use a separate variable file
+
+### fix
+
+Takes a tempalte and finds backwards incompatible parts of it and brings it up to date so it can be used with the latest version of Packer. Use after you update Packer to a new release version.
+
+### fmt
+
+Used to format your Packer templates and files to the preferred HCL canonical format and style.
+
+### inspect
+
+Shows all components of a Packer template including variables, builds, sources, provisioners and post-procesors.
+
+### validate
+
+Validates the syntax and the configration of your packer template. This is your first validation for templates after writing or updating them.
+
+### hcl2_upgrade
+
+Translates a template written in the older JSON format to the new HCL2 format.
+
+
+## Environment Variables
+
+Packer has a few environment variables that you should know:
+- PKACER_LOG - enable Packer detauled logs (off by default)
+- PACKER_LOG_PATH - set the path for Packer logs to specified file (rather than stderr)
+- PKR_VAR_<name> - define a variable value using ENV rather than in a template
+
+```bash
+# Enable Detailed Logs
+export PACKER_LOG=1
+
+# Set a path for logs
+export PACKER_LOG_PATH=/var/log/packer.log
+
+# run the packer build
+packer build base-image.pkr.hcl
 ```
 
 ```bash
-
-```
-
-## Template Debugging
-
-```bash
-PACKER_LOG=1 packer build -debug ubuntu.json |& tee debug.txt
+# Declare a value for the aws_region variable using ENV
+export PKR_VAR_aws_region=us-east-1
+packer build aws-base-image.pkr.hcl
 ```
