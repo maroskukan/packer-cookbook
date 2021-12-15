@@ -22,6 +22,14 @@
     - [validate](#validate)
     - [hcl2_upgrade](#hcl2_upgrade)
   - [Environment Variables](#environment-variables)
+  - [Workflow](#workflow)
+    - [AWS Example](#aws-example)
+  - [Templates](#templates)
+    - [HCL Formatting](#hcl-formatting)
+    - [Block Organization](#block-organization)
+    - [Comments](#comments)
+    - [Interpolation syntax](#interpolation-syntax)
+    - [Plugin architecture](#plugin-architecture)
 
 ## Introduction
 
@@ -79,7 +87,7 @@ For example:
 - Create a new vSphere template requires the name of the source VM
 - Building a new Google Compute images needs a source image to start
 
-```ruby
+```hcl
 source "azure-arm" "azure-arm-centos-7" {
   image_offer     = "CentOS"
   image_publisher = "OpenLogic"
@@ -97,7 +105,7 @@ source "azure-arm" "azure-arm-centos-7" {
 - Everything done to the image is done within the BUILD block
 - This is where customization "work" happens
 
-```ruby
+```hcl
 build {
   source = ["source.azure-arm.azure-arm-centos-7"]
 
@@ -144,7 +152,7 @@ build {
 - Variables can be declared in a **.pkrvars.hcl** file or **.auto.pkrvars.hcl**, the default .pkr file, or any other file name if referenced when executing the build.
 - You can also declare individually using the **var** option.
 
-```ruby
+```hcl
 variable "image_id" {
   type        = string
   description = "The id of the machine image (AMI) to use for server."
@@ -255,3 +263,69 @@ packer build base-image.pkr.hcl
 export PKR_VAR_aws_region=us-east-1
 packer build aws-base-image.pkr.hcl
 ```
+
+
+## Workflow
+
+### AWS Example
+
+1. HCL2 Template
+2. Packer Build
+3. Provision Instance
+4. Run Provisioners (pull artifacts if required)
+5. Create AMI
+6. Register AMI
+7. Destroy Instance
+
+## Templates
+
+The core functionality and behavior of Packer is defined by a template.
+Templates consist of declarations and command, such as what plugins (builders, provisioners, etc.) to use, how to configure the plugins. and what order to run them.
+
+Packer currently supports two format for templates:
+- JSON (Javascript Object Notation)
+- HCL2 (HashiCorp Configuration Language)
+
+### HCL Formatting
+
+- Configuration format is VCS friendly (multi-line lists, training commands, auto-formatting)
+- Only code blocks built into the HCL language are available to use
+- Packer uses a standard file name for simplicity <name>.pkr.hcl
+- Uses Syntax Constructs like Blocks and Arguments
+- New features will only be implemented for the HCL format moving forward
+
+### Block Organization
+
+- In general, the ordering of root blocks is not significat within a Packer template since Packer uses a declarative model. References to other resources do not depend on the order they are defined.
+- Blocks can even span multiple Packer template files.
+- The order of provisioner or post-processor blocks within a build is the only major feature where block order matters.
+
+### Comments
+
+HCL2 supports comment to use throughout the configuration file:
+
+```hcl
+# this is a comment
+source "amazon-ebs" "example" {
+  ami_name = "abc123"
+}
+// this is also a comment
+
+/* <-this is a multi-line comment
+source "amazon-ebs" "example {
+  amin_name = "abc123"
+}
+*/
+variable "example" {
+```
+
+### Interpolation syntax
+
+- Like Terraform, we can use interpolation syntax to refer to other blocks within the template
+- Allows us to orgamize code as well as reuse values that are already defined or have been retrieved
+
+### Plugin architecture
+
+- Builders, provisioners, post-processors, and data sources are simply plugins that are consumed during the Packer build process
+- This allows new functionality to be added to Packer without modifying the core source code
+

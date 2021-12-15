@@ -1,0 +1,33 @@
+{
+    "variables": {
+        "aws_source_ami": "ami-039a49e70ea773ffc"
+    },
+    "builders": [
+        {
+            "type": "amazon-ebs",
+            "region": "us-east-1",
+            "source_ami": "{{user `aws_source_ami`}}",
+            "instance_type": "t1.micro",
+            "ssh_username": "ubuntu",
+            "ssh_pty": "true",
+            "ami_name": "tmp-{{timestamp}}",
+            "tags": {
+                "Created-by": "Packer",
+                "OS_Version": "Ubuntu",
+                "Release": "Latest"
+            }
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "mkdir ~/src",
+                "cd ~/src",
+                "git clone https://github.com/hashicorp/demo-terraform-101.git",
+                "cp -R ~/src/demo-terraform-101/assets /tmp",
+                "sudo sh /tmp/assets/setup-web.sh"
+            ]
+        }
+    ]
+}
