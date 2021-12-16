@@ -30,6 +30,7 @@
     - [Comments](#comments)
     - [Interpolation syntax](#interpolation-syntax)
     - [Plugin architecture](#plugin-architecture)
+  - [Builders](#builders-1)
 
 ## Introduction
 
@@ -328,4 +329,24 @@ variable "example" {
 
 - Builders, provisioners, post-processors, and data sources are simply plugins that are consumed during the Packer build process
 - This allows new functionality to be added to Packer without modifying the core source code
+
+
+## Builders
+
+- Builders are responsible for creating machines and generating images from them for various platforms
+- You can specify one or more builder blocks in a template.
+- Each builder block can reference one or more source blocks.
+- There are many configuration options for a given builder. Some options are required, and others are optional. The optional are dependent on the what the builder type supports.
+
+Popular buidlers include:
+- AWS AMI Builder
+- Azure Resource Manager Builder
+- VMware Builder from ISO
+- VMware vSphere Clone Builder
+- VMware vSphere Builder from ISO
+- Docker Builder
+- Google Compute Builder
+- Null Builder
+- QEMU Builder
+- Virtual Box Builder
 
