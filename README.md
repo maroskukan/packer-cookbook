@@ -31,6 +31,16 @@
     - [Interpolation syntax](#interpolation-syntax)
     - [Plugin architecture](#plugin-architecture)
   - [Builders](#builders-1)
+    - [Limits and Exceptions](#limits-and-exceptions)
+  - [Variables](#variables-1)
+    - [Introduction](#introduction-1)
+    - [Use Cases](#use-cases-1)
+    - [Declaration](#declaration)
+    - [Types](#types)
+    - [Usage](#usage)
+    - [Precedence](#precedence)
+    - [Locals](#locals)
+    - [Environment](#environment)
 
 ## Introduction
 
@@ -350,3 +360,191 @@ Popular buidlers include:
 - QEMU Builder
 - Virtual Box Builder
 
+### Limits and Exceptions
+
+When using multi-image or multi-cloud packer templates, it may be useful to limit the scope of the build by using `only` and `except` options.
+
+```bash
+# Display packer build options
+packer build --help | grep 'only\|except'
+  -except=foo,bar,baz           Run all builds and post-processors other than these.
+  -only=foo,bar,baz             Build only the specified builds.
+
+# Build image only for AWS
+packer build -only="*amazon*" agnostic/ubuntu.pkr.hcl
+```
+
+
+## Variables
+
+### Introduction
+
+- Packer can use variables to define defaults and values during a build
+- Work a lot like variables from other programming languages
+- Allow you to remove hard coded vallues and pass parameters to your configuration
+- Can help make configuration easier to understand and increase reusability
+- Must always have a value. Variables are optional, and they can have a default value
+
+### Use Cases
+
+- Use variables to pass value to your configuration
+- Refector existing configuraiton to use variables
+- Keep sensitive data out of source control
+- Pass variable to Packer in several ways
+
+### Declaration
+
+- Variables can be declared and defined in a `.pkrvars.hcl` file or `.auto.pkrvars.hcl` the default .pkr file, or any other file name if referenced when executing the build.
+- You can also declare individually using the `-var` option.
+- Declare variables can be accessed through the template where needed within expressions.
+- The type is a constant, meaning that's the only value that will be accepted for that variable.
+
+### Types
+
+- The most common variable types are string, number, list and map.
+- Other support types include bool (true/false), set, objects, and tuple
+- If type is omitted, it is inferred from the default value
+- If neither type nor default is provided, the type is assumed to be string
+- You can also specify complex types, such as collections
+
+```hcl
+variable "image_id" {
+  type        = string
+  description = "The id of machine image (AMI)."
+  default     = "ami-1234abcd"
+}
+```
+
+```hcl
+variable "image_id" {
+  type        = list(string)
+  description = "The id of the machine image (AMI)."
+  default     = ["ami-1234abcd", "ami-1z2y3x445v"]
+}
+```
+
+A variable can be marked as senstive if required telling packer to obfuscate it from the output.
+
+```hcl
+variable "ssh_password" {
+  sensitive = true
+  default   = {
+    key = "SuperSecret123"
+  }
+}
+```
+
+```bash
+$ packer inspect password.pkr.hcl
+Packer Inspect: HCL2 mode
+
+> input-variables:
+var.ssh_password: "{\n \"key\" = \"<sensitive>\"\n }"
+```
+
+### Usage
+
+There are two main how we can refer to a variable.
+
+- General Referral in Packer `var.<name>`
+- Interpolation within a String `"${var.<name>}"`
+
+Example of general referral in template:
+
+```hcp
+image_name = var.image_name
+subnet_id = var.subnet
+vpc_id = var.vpc
+```
+
+Example of interpolation within a string:
+```hcp
+image_name = "${var.prefix}-iamge-{{timestamp}}"
+```
+
+- Declared  variables can be accessed throughout the template where needed
+- Reference variables using expressions such as `var.<name>` or `"${var.<name>}"`
+
+```hcp
+source "amazon-ebs" "aws-example" {
+  ami_name      = "aws-${var.ami_name}"
+  instance_type = "t3.medium"
+  region        = "var.region
+  source_ami_filter {
+    filters = {
+      name                = var.source_ami_name
+      root-device-type    = "ebs"
+      virtualization-type = "hvm"
+    }
+    owners = [var.source_ami_owner]
+  }
+}
+```
+
+To change the default variable value we can use `=` operator, for example:
+
+```hcp
+variable "image_id" {
+  type        = string
+  description = "The id of the machine image (AMI)"
+  default     = "ami-1234abcd"
+}
+```
+
+Define variable in another file e.g. `variables.pkrvars.hcl`
+```hcp
+image_id = "ami-5678wxyz"
+```
+
+Or define variable with command line argument:
+```bash
+packer build -var image_id=ami=5467wxyz aws-build.pkr.hcl
+```
+
+### Precedence
+
+Lowest to highest priority:
+
+1. Default Values
+2. Environment Variables
+3. Variable Definition File
+4. Using the `-var` or `-var-file` CLI option
+5. Variables Entered via CLI Prompt
+
+### Locals
+
+- Similar to input variables, assign a name to an expression or value
+- Locals cannot be overridden at runtime - they are constants
+  - Can use a `local {}` or `locals {}` block - can mark local as senstive
+  - Using `locals {}` is more compact and efficient
+- Referenced in a Packer file through interpolation - local.<name>
+
+```hcp
+locals {
+  timestamp = regex_repace(timestamp(), "[- TZ:]", "")
+}
+
+variable "image_name" {
+  image_name = "${var.ami_prefix}-${local.timestamp}"
+}
+```
+### Environment
+
+- Variables can also be set using environment variables
+- Great solution for setting credentials or variables that might change often
+- Packer will read environment variables in the form of `PKR_VAR_<name>`
+
+```bash
+# set environment variables
+export PKR_VAR_secret_key=AIOAJSFJAIFHEXAMPLE
+export PKR_VAR_access_key=wPWOIAOFIJwohfalskfhiAUHFhnalkfjhuwahfi
+
+# run packer build that will use ENV
+packer build aws-linux.pkr.hcl
+```
+
+Packer will automatically define certain commonly used environment variables at build time that can be referenced
+
+PACKER_BUILD_NAME - set to the name of the build that Packer is running
+PACKER_BUILD_TYPE - set the type of build that was used to create the machine
+PACKER_HTTP_ADDR - set to the address of the http server for file transfer (if used)
