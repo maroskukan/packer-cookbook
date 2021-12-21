@@ -52,6 +52,10 @@
     - [Shell-local](#shell-local)
     - [Compress](#compress)
     - [Checksum](#checksum)
+  - [Code Organization](#code-organization)
+    - [Organizational Patters](#organizational-patters)
+    - [Build Options](#build-options)
+    - [Syntax Highlighting](#syntax-highlighting)
 
 ## Introduction
 
@@ -805,7 +809,78 @@ build {
 
   post-processor "checksum" {
     checksuym_types = ["sha1", "sha256"]
-    output          = "packer_{{.BuildName}}_{{.ChecksumType}}.cheksum" 
+    output          = "packer_{{.BuildName}}_{{.ChecksumType}}.cheksum"
   }
 }
 ```
+
+
+## Code Organization
+
+- Packer configuration can be a single file or split across multiple files. Packer will process all files in the current working directory which end in .pkr.hcl and .pkvars.hcl.
+- Sub-folders are not included (non-recursive)
+- Files are processed in lexicographical (dictionary) order
+- Any files with a different extensions are ignored
+- Generally, the order in which things are defined doesn't matter
+- Parsed configurations are appended to each other, not merged
+- Sources with the same name are not merged (this will produce and error)
+- Configuration syntax is declarative, so references to other resources do not depend on the order they are defined
+
+### Organizational Patters
+
+Pattern A:
+
+```bash
+$ ls
+main.pkr.hcl
+variables.pkvars.hcl
+```
+
+Pattern B:
+
+```bash
+$ ls
+aws.pkr.hcl
+azure.pkr.hcl
+gcp.pkr.hcl
+vmware.pkr.hcl
+variables.pkvars.hcl
+```
+
+Pattern C:
+
+```bash
+$ ls
+ubuntu.pkr.hcl
+windows.pkr.hcl
+rhel.pkr.hcl
+variables.pkvars.hcl
+```
+
+Pattern D:
+
+```bash
+everything.pkr.hcl
+```
+
+### Build Options
+
+```bash
+# Validate and Build all Items
+# in a working directory
+$ packer validate .
+$ packer build .
+
+# Specify certain cloud target
+$ packer build -only "*.amazon.*"
+
+# Specify certain OS types
+$ packer build -only "*.ubuntu.*"
+
+# Specify individual template
+$ packer build aws.pkr.hcl
+```
+
+### Syntax Highlighting
+
+Plugins for Packer/HCL exists for most major editors, but Terraform tends to work best of one does not exist for Packer.
