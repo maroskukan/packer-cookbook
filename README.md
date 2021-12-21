@@ -56,6 +56,10 @@
     - [Organizational Patters](#organizational-patters)
     - [Build Options](#build-options)
     - [Syntax Highlighting](#syntax-highlighting)
+  - [Troubleshooting](#troubleshooting)
+    - [Debug](#debug)
+    - [on-error](#on-error)
+    - [Breakpoint provisioner](#breakpoint-provisioner)
 
 ## Introduction
 
@@ -884,3 +888,73 @@ $ packer build aws.pkr.hcl
 ### Syntax Highlighting
 
 Plugins for Packer/HCL exists for most major editors, but Terraform tends to work best of one does not exist for Packer.
+
+
+## Troubleshooting
+
+### Debug
+
+In order to display live debug debug information, you can set the `PACKER_LOG` environment variable.
+
+```bash
+export PACKER_LOG=1
+```
+
+```powershell
+$env:PACKER_LOG=1
+```
+
+In order to save debug information. you can set the `PACKER_LOG_PATH` environment variable to desired file.
+
+```bash
+export PACKER_LOG_PATH="packer_log.txt"
+```
+
+```powershell
+$env:PACKER_LOG_PATH="packer_log.txt"
+```
+
+To disable logging change the variable values to defaults.
+
+```bash
+export PACKER_LOG=0
+export PACKER_LOG_PATH=""
+```
+
+```powershell
+$env:PACKER_LOG=0
+$env:PACKER_LOG_PATH=""
+```
+
+You can also leverage packer build with the `-debug` option to step through the build process. This however disabled parallel build process. This is useful for remote buidls in cloud environment.
+
+### on-error
+
+Packer also provides the ability to inspect failures durin the debug process. The `on-error=ask` option allows you to inspect failures and try out solutiosn before restarting the build.
+
+```bash
+packer build --help | grep 'on-error'
+  -on-error=[cleanup|abort|ask|run-cleanup-provisioner] If the build fails do: clean up (default), abort, ask, or run-cleanup-provisioner.
+```
+
+### Breakpoint provisioner
+
+This provisioner will pause until user presses enter to resume the build. This is useful for debugging.
+
+```bash
+packer build packer-breakpoints.pkr.hcl
+null.debug: output will be in this color.
+
+==> null.debug: Running local shell script: /tmp/packer-shell2159196625
+    null.debug: hi
+==> null.debug: Pausing at breakpoint provisioner with note "this is a breakpoint".
+==> null.debug: Press enter to continue.
+==> null.debug: Running local shell script: /tmp/packer-shell389208221
+    null.debug: hi 2
+Build 'null.debug' finished after 1 second 317 milliseconds.
+
+==> Wait completed after 1 second 317 milliseconds
+
+==> Builds finished. The artifacts of successful builds are:
+--> null.debug: Did not export anything. This is the null builder
+```
