@@ -54,4 +54,12 @@ build {
   sources = [
     "source.amazon-ebs.ubuntu"
   ]
+
+  provisioner "shell" {
+    inline = [
+      "echo Updating Packages and Installing nginx",
+      "sudo apt-get update -y",
+      "sudo apt-get install -y nginx"
+    ]
+  }
 }
