@@ -41,6 +41,12 @@
     - [Precedence](#precedence)
     - [Locals](#locals)
     - [Environment](#environment)
+  - [Provisioners](#provisioners-1)
+    - [File](#file)
+    - [Shell](#shell)
+    - [Ansible](#ansible)
+    - [PowerShell](#powershell)
+    - [Features](#features)
 
 ## Introduction
 
@@ -548,3 +554,140 @@ Packer will automatically define certain commonly used environment variables at 
 PACKER_BUILD_NAME - set to the name of the build that Packer is running
 PACKER_BUILD_TYPE - set the type of build that was used to create the machine
 PACKER_HTTP_ADDR - set to the address of the http server for file transfer (if used)
+
+
+## Provisioners
+
+- Provisioners user built-in and third-party integrations to install packages and configure the machine image
+- Built-in integrations include `file` and different `shell` options.
+- Third-party integrations include Ansible, Chef, InSpec, PowerShell, Puppet, Salt, Windows Shell and many [more](https://www.packer.io/docs/provisioners).
+
+Provisioners prepare the system for use, therefore common use cases are:
+- installing packages
+- patching the kernel
+- creating users
+- downloading application code
+
+### File
+
+File provisioner is used to upload file(s) to image being built.
+
+```hcl
+provisioner "file" {
+  source        = "packer.zip"
+  desctionation = "/tmp/packer.zip"
+}
+```
+
+```hcl
+provisioner "file" {
+  source      = "/files"
+  destination = "/tmp"
+}
+```
+
+### Shell
+
+Shell provisioner can execute script or individual commands within image being built.
+
+```hcl
+provisioner "shell" {
+  script = "install_something.sh"
+}
+```
+
+```hcl
+provisioner "shell" {
+  inline = [
+    "echo Updating package list and installing software",
+    "sudo apt-get update",
+    "sudo apt-get install -y nginx"
+  ]
+}
+```
+
+### Ansible
+
+Ansible provisioner runs playbooks. It dynamically creates an inventory file configured to use SSH.
+
+```hcl
+provisioner "ansible" {
+  ansible_env_vars  = ["ANSIBLE_HOST_KEY_CHECKING=False"]
+  extra_arguments   = ["--extra-vars", "desktop=false"]
+  playbook_file     = "${path.root}/playbooks/playbook.yml"
+  user              = var.ssh_username
+}
+```
+
+### PowerShell
+
+```hcl
+provisioner "powershell" {
+  script = [".scripts/win2019.ps1"]
+}
+```
+
+### Features
+
+Provisioners supports `only` and `except` options to run only on specific builds. The `override` options can be useful when building images across different platforms so you end up with a like-for-like images.
+
+```hcl
+provisioner "shell-local" {
+  inline = ["./tmp/install_vmware-tools.sh"]
+  override = {
+    aws = {
+      inline = ["./tmp/install_cloudwatch_agent.sh"]
+    }
+  }
+}
+```
+
+The `error-cleanup-provisioner` can invoke a provisioner that only runs if related provsioner fails. It runs before the instane is shutdown or terminated. For example write data to a file, unsubscribe from a service or clean up custom work.
+
+```hcl
+build {
+  sources = ["aws-amazonlinux-build"]
+  provisioner "shell-local" {
+    inline = ["sudo yum update -y"]
+  }
+  error-cleanup-provisioner "shell-local" {
+    inline = ["echo 'update provisioner failed'> packer_log.txt"]
+  }
+}
+```
+
+The `pause_before` option can provide a waiting period. This is useful when it takes a bit for the OS to compe up, or other processes are running that could conflict with provisioner.
+
+```hcl
+build {
+  sources = ["aws-ubuntu-build"]
+  provisioner "shell-local" {
+    inline = ["sudo apt-get update -y"]
+    pause_before = "10s"
+  }
+}
+```
+
+The `max_retries` option can restart provisioner if it failed. It is helpful when provisioner depends on external data/processes to complete successfully.
+
+```hcl
+build {
+  sources = ["aws-ubuntu-build"]
+  provisioner "shell-local" {
+    inline = ["sudo yum update -y"]
+    max_retries = 5
+  }
+}
+```
+
+The `timeout` option can be used to define maximum time that the provisioner should complete its task, before it is considered as failed.
+
+```hcl
+build = {
+  sources = ["aws-ubuntu-build"]
+  provisioner "shell-local" {
+    inline = ["./install_something.sh"]
+    timeout = "5m"
+  }
+}
+```
