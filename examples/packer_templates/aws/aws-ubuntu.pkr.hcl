@@ -62,4 +62,6 @@ build {
       "sudo apt-get install -y nginx"
     ]
   }
+
+  post-processor "manifest" {}
 }

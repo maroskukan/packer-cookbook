@@ -47,6 +47,11 @@
     - [Ansible](#ansible)
     - [PowerShell](#powershell)
     - [Features](#features)
+  - [Post-Processors](#post-processors-1)
+    - [Manifest](#manifest)
+    - [Shell-local](#shell-local)
+    - [Compress](#compress)
+    - [Checksum](#checksum)
 
 ## Introduction
 
@@ -632,7 +637,7 @@ provisioner "powershell" {
 Provisioners supports `only` and `except` options to run only on specific builds. The `override` options can be useful when building images across different platforms so you end up with a like-for-like images.
 
 ```hcl
-provisioner "shell-local" {
+provisioner "shell" {
   inline = ["./tmp/install_vmware-tools.sh"]
   override = {
     aws = {
@@ -646,8 +651,10 @@ The `error-cleanup-provisioner` can invoke a provisioner that only runs if relat
 
 ```hcl
 build {
-  sources = ["aws-amazonlinux-build"]
-  provisioner "shell-local" {
+  sources = [
+    "source.amazon-ebs.ubuntu"
+  ]
+  provisioner "shell" {
     inline = ["sudo yum update -y"]
   }
   error-cleanup-provisioner "shell-local" {
@@ -660,8 +667,10 @@ The `pause_before` option can provide a waiting period. This is useful when it t
 
 ```hcl
 build {
-  sources = ["aws-ubuntu-build"]
-  provisioner "shell-local" {
+  sources = [
+    "source.amazon-ebs.ubuntu"
+  ]
+  provisioner "shell" {
     inline = ["sudo apt-get update -y"]
     pause_before = "10s"
   }
@@ -672,8 +681,10 @@ The `max_retries` option can restart provisioner if it failed. It is helpful whe
 
 ```hcl
 build {
-  sources = ["aws-ubuntu-build"]
-  provisioner "shell-local" {
+  sources = [
+    "source.amazon-ebs.ubuntu"
+  ]
+  provisioner "shell" {
     inline = ["sudo yum update -y"]
     max_retries = 5
   }
@@ -684,10 +695,117 @@ The `timeout` option can be used to define maximum time that the provisioner sho
 
 ```hcl
 build = {
-  sources = ["aws-ubuntu-build"]
-  provisioner "shell-local" {
+  sources = [
+    "source.amazon-ebs.ubuntu"
+  ]
+  provisioner "shell" {
     inline = ["./install_something.sh"]
     timeout = "5m"
+  }
+}
+```
+
+
+## Post-Processors
+
+- Post-processors are executed after provisioners are complete and the image is built. It can be used to upload artifacts, execute scripts, or import an image.
+- Post-processors are completely optional
+- Examples include:
+  - Execute a local script after the build is completed (shell-local)
+  - Create a machine-readable report of what was build (manifest)
+  - Incorporate within a CI/CD build pipeline to be used for additional steps
+  - Compute a checksum for the artifact so you verify it later (checksum)
+  - Import a packege to AWS after building in your data center (AWS)
+  - Convert the artifact into a Vagratn box (Vagrant)
+  - Create a VMware template from the resulting build (vSphere Template)
+
+### Manifest
+
+Defined in build block, each post-processor runs after each defined build. The post-processor takes the artifact from a build, uses it, and deletes the artifact after it is done (default behavior)
+
+Post-processor defines a sinle post-processor.
+
+The manifest creates a JSON file with a list of all the artifacts that packer created during build. The file is invoked each time a build completes and the file is updated.
+
+Default file name is `packer-manifest.json` but can be updated using the `output` option.
+
+```hcl
+build {
+  sources = [
+    "source.amazon-ebs.ubuntu"
+  ]
+
+  provisioner "shell" {
+    inline = [
+      "echo Updating Packages and Installing nginx",
+      "sudo apt-get update -y",
+      "sudo apt-get install -y nginx"
+    ]
+  }
+
+  post-processor "manifest" {
+    output = "my-first-manifest.json"
+  }
+}
+```
+
+### Shell-local
+
+The local shell post processor enables you to execute scripts locally after the machine image is built. It is helpful for chaining tasks to your Packer build after it is completed. You can pass in environment variables, customize how the command is executed, and specify the script to be executed.
+
+```hcl
+build {
+  sources = [
+    "source.amazon-ebs.ubuntu"
+  ]
+
+  provisioner "shell" {
+    inline = [
+      "sudo apt-get update -y"
+    ]
+  }
+
+  post-processor "shell-local" {
+    environment_vars = ["ENVIRONMENT=production"]
+    scripts = ["./scripts/update_docs.sh"]
+  }
+}
+```
+
+### Compress
+
+- Takes the final artifact and compresses it into a single archive
+- By default, this post-processor compresses files into as ingle tarball (.tar.gz file)
+- However, the following extensions are supported: .zip, .gz, .tar.gz, .lz4 and .tar.lz4
+- Very helpful if you're build packages locally - vSphere, Vagrant. etc
+
+```hcl
+build {
+  sources = [
+    "source.amazon-ebs.amazonlinux-2"
+  ]
+
+  post-processor "compress" {
+    output = "{{.BuildName}}-image.zip
+  }
+}
+```
+
+### Checksum
+
+- Computes the checksum for the current artifact
+- Useful to validate no changes occured to the artifact since running the packer build
+- Cane be used during validation phase of a CI/CD pipelien
+
+```hcl
+build {
+  sources = [
+    "source.amazon-ebs.amazonlinux-2"
+  ]
+
+  post-processor "checksum" {
+    checksuym_types = ["sha1", "sha256"]
+    output          = "packer_{{.BuildName}}_{{.ChecksumType}}.cheksum" 
   }
 }
 ```
