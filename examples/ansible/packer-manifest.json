@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "name": "ubuntu_20",
+      "builder_type": "amazon-ebs",
+      "build_time": 1640162885,
+      "files": null,
+      "artifact_id": "us-east-1:ami-013b85e4903b8d807",
+      "packer_run_uuid": "7f9fdd9b-90d0-cc19-2f41-0186eb17411c",
+      "custom_data": null
+    }
+  ],
+  "last_run_uuid": "7f9fdd9b-90d0-cc19-2f41-0186eb17411c"
+}

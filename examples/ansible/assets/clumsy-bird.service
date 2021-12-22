@@ -1,0 +1,12 @@
+[Install]
+WantedBy=multi-user.target
+
+[Unit]
+Description=Clumsy Bird App
+
+[Service]
+WorkingDirectory=/src/clumsy-bird
+ExecStart=/src/clumsy-bird/launch.sh >> /var/log/webapp.log
+IgnoreSIGPIPE=false
+KillMode=process
+Restart=on-failure

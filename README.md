@@ -60,6 +60,8 @@
     - [Debug](#debug)
     - [on-error](#on-error)
     - [Breakpoint provisioner](#breakpoint-provisioner)
+  - [Integrations](#integrations)
+    - [Ansible](#ansible-1)
 
 ## Introduction
 
@@ -958,3 +960,13 @@ Build 'null.debug' finished after 1 second 317 milliseconds.
 ==> Builds finished. The artifacts of successful builds are:
 --> null.debug: Did not export anything. This is the null builder
 ```
+
+
+## Integrations
+
+### Ansible
+
+Packer provides two types of provisioners that work with Ansible. Ansible Remote that assumes that Ansible is available on the provisioning host and Ansible Local that assumes that Ansible is available in the template being build. In either cases the goal is to provision software and configuration through Ansible playbooks.
+
+
+
