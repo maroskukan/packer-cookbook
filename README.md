@@ -62,6 +62,7 @@
     - [Breakpoint provisioner](#breakpoint-provisioner)
   - [Integrations](#integrations)
     - [Ansible](#ansible-1)
+    - [Terraform](#terraform)
 
 ## Introduction
 
@@ -968,5 +969,26 @@ Build 'null.debug' finished after 1 second 317 milliseconds.
 
 Packer provides two types of provisioners that work with Ansible. Ansible Remote that assumes that Ansible is available on the provisioning host and Ansible Local that assumes that Ansible is available in the template being build. In either cases the goal is to provision software and configuration through Ansible playbooks.
 
+The benefit of using playbooks during image building is that they can be reused again during instance provisioning.
 
+### Terraform
+
+Terraform is a tool that uses declarative configuration files written in HashiCorp Configuration Language (HCL) similar to Packer. It is great tool for deploying instances from images that were created by Packer.
+
+```bash
+
+# Prepare your working directory (verify config, install plugins)
+terraform init
+
+# Show changes required for current configuration
+# This will ask for AMI ID which can be retrieved
+# from Packer manifest file. (e.g. ami-013b85e4903b8d807)
+terraform plan
+
+# Create or update infrastructure
+terraform apply
+
+# Destroy previously-created infrastructure
+terraform destroy
+```
 
