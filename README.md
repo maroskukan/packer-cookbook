@@ -992,3 +992,35 @@ terraform apply
 terraform destroy
 ```
 
+You can also reference an existing image using data block inside terraform template.
+
+```hcl
+data "aws_ami" "packer_image" {
+  most_recent = true
+
+  filter {
+    name = "tag:Created-by"
+    values = ["Packer"]
+  }
+
+  filter {
+    name = "tag:Name"
+    values = [var.appname]
+  }
+
+  owners = ["self"]
+}
+```
+
+And then validate and plan the new deployment.
+
+```bash
+$ terraform validate
+Success! The configuration is valid.
+
+# Perform a dry run
+$ terraform plan -var 'appname=ClumsyBird'
+
+# Execute the deployment
+$ terraform apply -var 'appname=ClumsyBird'
+```

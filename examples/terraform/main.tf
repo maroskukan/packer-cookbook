@@ -1,8 +1,3 @@
-variable "ami" {
-  type = string
-  description = "Application Image to Deploy"
-}
-
 variable "region" {
   type    = string
   default = "us-east-1"
@@ -17,8 +12,24 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_ami" "packer_image" {
+  most_recent = true
+
+  filter {
+    name = "tag:Created-by"
+    values = ["Packer"]
+  }
+
+  filter {
+    name = "tag:Name"
+    values = [var.appname]
+  }
+
+  owners = ["self"]
+}
+
 resource "aws_instance" "test_ami" {
-  ami           = var.ami
+  ami           = data.aws_ami.packer_image.image_id
   instance_type = "t2.micro"
   key_name      = "MyEC2Instance"
 
