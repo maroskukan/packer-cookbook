@@ -63,6 +63,7 @@
   - [Integrations](#integrations)
     - [Ansible](#ansible-1)
     - [Terraform](#terraform)
+  - [Vault](#vault)
 
 ## Introduction
 
@@ -1023,4 +1024,23 @@ $ terraform plan -var 'appname=ClumsyBird'
 
 # Execute the deployment
 $ terraform apply -var 'appname=ClumsyBird'
+```
+
+
+## Vault
+
+HashiCorp Vault is a secrets management tool. In order to retrieve secrets from Vault you need to set variables for accessing the Vault.
+
+```bash
+# For demostration run in dev mode
+vault server -dev
+
+export VAULT_ADDR='http://127.0.0.1:8200'
+export VAULT_TOKEN=s.sYzb7wS4PATgcp5sn9TUT72l
+
+# Validate the connection to vault
+vault status
+
+# Validate and build the template
+packer validate vault_integration.pkr.hcl && packer build vault_integration.pkr.hcl
 ```
