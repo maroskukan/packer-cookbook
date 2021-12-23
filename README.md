@@ -64,6 +64,7 @@
     - [Ansible](#ansible-1)
     - [Terraform](#terraform)
   - [Vault](#vault)
+  - [Secrets Engine](#secrets-engine)
 
 ## Introduction
 
@@ -1043,4 +1044,31 @@ vault status
 
 # Validate and build the template
 packer validate vault_integration.pkr.hcl && packer build vault_integration.pkr.hcl
+```
+
+
+## Secrets Engine
+
+HashiCorp Vault supports AWS credentials through secrets engine. This is useful when we need to create and retrieve temporary credentials dynamically through Vault, therefore not storing long-term credentials on build server.
+
+```bash
+# Without this integration a build would fail
+packer build examples/vault/vault_aws_engine.pkr.hcl
+amazon-ebs.rhel: output will be in this color.
+
+Build 'amazon-ebs.rhel' errored after 6 seconds 339 milliseconds: no valid credential sources for  found.
+
+Please see
+for more information about providing credentials.
+
+Error: NoCredentialProviders: no valid providers in chain. Deprecated.
+        For verbose messaging see aws.Config.CredentialsChainVerboseErrors
+```
+
+Once the Vault is setup with AWS Secrets Engine with correct role and IAM policy. You can include the following block inside the source block in Packer template.
+
+```hcl
+  vault_aws_engine {
+    name = "my-role"
+  }
 ```
