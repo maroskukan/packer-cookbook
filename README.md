@@ -65,6 +65,8 @@
     - [Terraform](#terraform)
   - [Vault](#vault)
   - [Secrets Engine](#secrets-engine)
+  - [Tips](#tips)
+    - [Salted Hash for Kickstart](#salted-hash-for-kickstart)
 
 ## Introduction
 
@@ -1071,4 +1073,14 @@ Once the Vault is setup with AWS Secrets Engine with correct role and IAM policy
   vault_aws_engine {
     name = "my-role"
   }
+```
+
+## Tips
+
+### Salted Hash for Kickstart
+
+```bash
+python -c "import crypt;print(crypt.crypt(input('clear-text-pw: '), crypt.mksalt(crypt.METHOD_SHA512)))"
+clear-text-pw: test
+$6$BfeENzHTV2I.T6Ec$EQXrqQ/YiZM4lBOlBTZmcJtkdqjOo2Ja.3Y3poxb2pC9APzSNoFvrE4Otqhf9vfcCUKO8Ge7fmFsybxxhu3nO.
 ```
