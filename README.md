@@ -67,6 +67,7 @@
   - [Secrets Engine](#secrets-engine)
   - [Tips](#tips)
     - [Salted Hash for Kickstart](#salted-hash-for-kickstart)
+    - [Unattended installation](#unattended-installation)
 
 ## Introduction
 
@@ -1083,4 +1084,28 @@ Once the Vault is setup with AWS Secrets Engine with correct role and IAM policy
 python -c "import crypt;print(crypt.crypt(input('clear-text-pw: '), crypt.mksalt(crypt.METHOD_SHA512)))"
 clear-text-pw: test
 $6$BfeENzHTV2I.T6Ec$EQXrqQ/YiZM4lBOlBTZmcJtkdqjOo2Ja.3Y3poxb2pC9APzSNoFvrE4Otqhf9vfcCUKO8Ge7fmFsybxxhu3nO.
+```
+
+### Unattended installation
+
+```bash
+# Install domain
+sudo virt-install \
+--name rhel01 \
+--vcpus 2 \
+--memory 2048 \
+--disk path=/var/lib/libvirt/images/rhel01.qcow2,format=qcow2,size=10 \
+--location=/var/lib/libvirt/images/rhel-8.5-x86_64-dvd.iso \
+--nographics \
+--initrd-inject="$HOME/Downloads/rhel85-ks.cfg" \
+--extra-args="inst.ks=file:/rhel85-ks.cfg ip=dhcp console=ttyS0,115200n8" \
+--os-variant=rhel8.5
+
+# Once completed you can exit from
+# virtual console using Ctrl + Shift then ]
+# To open the console again use virsh console <domain-name>
+
+# To retrieve domains and its IP address
+virsh list
+virsh domifaddr <domain>
 ```
