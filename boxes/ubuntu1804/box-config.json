@@ -2,90 +2,82 @@
     "variables": {
         "version": "",
         "name": "ubuntu1804",
-        "build_timestamp": "{{isotime \"20060102150405\"}}",
         "cpus": "1",
-        "disk_size": "65536",
-        "git_revision": "__unknown_git_revision__",
-        "headless": "",
-        "http_proxy": "{{env `http_proxy`}}",
-        "https_proxy": "{{env `https_proxy`}}",
-        "hyperv_generation": "2",
-        "hyperv_switch": "{{env `hyperv_switch`}}",
-        "guest_additions_url": "",
         "memory": "1024",
-        "no_proxy": "{{env `no_proxy`}}",
-        "preseed_path": "preseed.cfg",
-        "template": "ubuntu-18.04-amd64"
+        "disk_size": "65536",
+        "http_proxy": "{{ env `http_proxy` }}",
+        "https_proxy": "{{ env `https_proxy` }}",
+        "no_proxy": "{{ env `no_proxy` }}"
     },
     "builders": [
         {
+            "type": "hyperv-iso",
+            "headless": true,
+            "vm_name": "packer-{{ user `name` }}",
             "boot_command": [
                 "<esc><wait10><esc><esc><enter><wait>",
                 "set gfxpayload=1024x768<enter>",
                 "linux /install/vmlinuz ",
-                "preseed/url=http://{{.HTTPIP}}:{{.HTTPPort}}/preseed.cfg ",
+                "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
                 "debian-installer=en_US.UTF-8 auto locale=en_US.UTF-8 kbd-chooser/method=us ",
-                "hostname={{.Name}} ",
+                "hostname={{ user `name` }} ",
                 "fb=false debconf/frontend=noninteractive ",
                 "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
                 "keyboard-configuration/variant=USA console-setup/ask_detect=false <enter>",
                 "initrd /install/initrd.gz<enter>",
                 "boot<enter>"
             ],
-            "boot_wait": "10s",
-            "communicator": "ssh",
-            "cpus": "{{ user `cpus` }}",
-            "disk_size": "{{user `disk_size`}}",
+            "boot_wait": "5s",
             "enable_secure_boot": false,
-            "generation": "{{user `hyperv_generation`}}",
+            "cpus": "{{ user `cpus` }}",
+            "memory": "{{ user `memory` }}",
+            "disk_size": "{{ user `disk_size` }}",
+            "switch_name": "Default switch",
+            "generation": "2",
             "http_directory": "http",
+            "communicator": "ssh",
+            "ssh_username": "vagrant",
+            "ssh_password": "vagrant",
+            "ssh_port": 22,
+            "ssh_timeout": "1800s",
             "iso_urls": [
                 "iso/ubuntu-18.04.4-server-amd64.iso",
                 "https://old-releases.ubuntu.com/releases/18.04.4/ubuntu-18.04.4-server-amd64.iso"
             ],
             "iso_checksum": "e2ecdace33c939527cbc9e8d23576381c493b071107207d2040af72595f8990b",
-            "memory": "{{user `memory`}}",
-            "output_directory": "builds/packer-{{user `template`}}-hyperv",
-            "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
-            "ssh_password": "vagrant",
-            "ssh_port": 22,
-            "ssh_timeout": "1800s",
-            "ssh_username": "vagrant",
-            "switch_name": "Default switch",
-            "type": "hyperv-iso",
-            "vm_name": "{{ user `template` }}",
-            "headless": true
+            "output_directory": "builds/{{ user `name` }}-hyperv",
+            "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now"
         }
     ],
     "provisioners": [
         {
             "environment_vars": [
                 "HOME_DIR=/home/vagrant",
-                "http_proxy={{user `http_proxy`}}",
-                "https_proxy={{user `https_proxy`}}",
-                "no_proxy={{user `no_proxy`}}"
+                "http_proxy={{ user `http_proxy` }}",
+                "https_proxy={{ user `https_proxy` }}",
+                "no_proxy={{ user `no_proxy` }}"
             ],
-            "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
+            "execute_command": "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'",
             "expect_disconnect": true,
             "scripts": [
-                "{{template_dir}}/scripts/update.sh",
-                "{{template_dir}}/scripts/motd.sh",
-                "{{template_dir}}/scripts/sshd.sh",
-                "{{template_dir}}/scripts/networking.sh",
-                "{{template_dir}}/scripts/sudoers.sh",
-                "{{template_dir}}/scripts/vagrant.sh",
-                "{{template_dir}}/scripts/hyperv.sh",
-                "{{template_dir}}/scripts/cleanup.sh",
-                "{{template_dir}}/scripts/minimize.sh",
-                "{{template_dir}}/scripts/swapoff.sh"
+                "scripts/update.sh",
+                "scripts/motd.sh",
+                "scripts/sshd.sh",
+                "scripts/networking.sh",
+                "scripts/sudoers.sh",
+                "scripts/vagrant.sh",
+                "scripts/hyperv.sh",
+                "scripts/cleanup.sh",
+                "scripts/minimize.sh",
+                "scripts/swapoff.sh"
             ],
             "type": "shell"
         }
     ],
     "post-processors": [
         {
-            "output": "builds/{{user `name`}}-{{.Provider}}.box",
-            "type": "vagrant"
+            "type": "vagrant",
+            "output": "builds/{{ user `name` }}-{{ .Provider }}.box"
         }
     ]
 }
