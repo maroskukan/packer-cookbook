@@ -1,0 +1,28 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # Hyper-V Provider Specific Configuration
+  config.vm.provider "hyperv" do |h|
+    h.enable_virtualization_extensions = true
+    h.linked_clone = true
+    h.memory = 2048
+    h.maxmemory = 2048
+  end
+
+  config.vm.define "ubuntu1804" do |ubuntu1804|
+    # VM Shared Configuration
+    ubuntu1804.vm.box = "file://builds/ubuntu1804-hyperv.box"
+    ubuntu1804.vm.hostname = "ubuntu1804"
+
+    # Hyper-V VM Specific Configuration
+    ubuntu1804.vm.provider 'hyperv' do |h, override|
+      override.vm.network "public_network", bridge: "Default Switch"
+      override.vm.synced_folder '.', '/vagrant', disabled: true
+    end
+  end
+
+  # VM Shared Provisioning
+  config.vm.provision "shell", inline: "cat /etc/os-release"
+end
