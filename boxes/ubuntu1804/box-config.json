@@ -28,6 +28,7 @@
                 "boot<enter>"
             ],
             "boot_wait": "5s",
+            "enable_dynamic_memory": true,
             "enable_secure_boot": false,
             "cpus": "{{ user `cpus` }}",
             "memory": "{{ user `memory` }}",
@@ -41,10 +42,10 @@
             "ssh_port": 22,
             "ssh_timeout": "1800s",
             "iso_urls": [
-                "iso/ubuntu-18.04.4-server-amd64.iso",
-                "https://old-releases.ubuntu.com/releases/18.04.4/ubuntu-18.04.4-server-amd64.iso"
+                "iso/ubuntu-18.04.5-server-amd64.iso",
+                "https://old-releases.ubuntu.com/releases/18.04.5/ubuntu-18.04.5-server-amd64.iso"
             ],
-            "iso_checksum": "e2ecdace33c939527cbc9e8d23576381c493b071107207d2040af72595f8990b",
+            "iso_checksum": "8c5fc24894394035402f66f3824beb7234b757dd2b5531379cb310cedfdf0996",
             "output_directory": "builds/{{ user `name` }}-hyperv",
             "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now"
         },
