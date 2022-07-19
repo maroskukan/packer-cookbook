@@ -49,48 +49,48 @@ variable "iso_checksum" {
 }
 
 source "hyperv-iso" "vm" {
-  boot_command          = ["<esc><wait10><esc><esc><enter><wait>", "set gfxpayload=1024x768<enter>", "linux /install/vmlinuz ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ", "debian-installer=en_US.UTF-8 auto locale=en_US.UTF-8 kbd-chooser/method=us ", "hostname=${var.name} ", "fb=false debconf/frontend=noninteractive ", "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ", "keyboard-configuration/variant=USA console-setup/ask_detect=false <enter>", "initrd /install/initrd.gz<enter>", "boot<enter>"]
+  boot_command          = ["<esc><wait>", "<esc><wait>", "<enter><wait>", "linux /install/vmlinuz ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ", "debian-installer=en_US.UTF-8 auto locale=en_US.UTF-8 kbd-chooser/method=us ", "hostname=${var.name} ", "fb=false debconf/frontend=noninteractive ", "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ", "keyboard-configuration/variant=USA console-setup/ask_detect=false <enter>", "initrd /install/initrd.gz<enter>", "boot<enter>"]
   boot_wait             = "5s"
   communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
   disk_size             = "${var.disk_size}"
-  enable_dynamic_memory = true
-  enable_secure_boot    = false
-  generation            = "2"
-  headless              = true
-  http_directory        = "http"
   iso_urls              = "${var.iso_urls}"
   iso_checksum          = "${var.iso_checksum}"
-  memory                = "${var.memory}"
-  output_directory      = "builds/${var.name}-hyperv"
-  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
   ssh_password          = "vagrant"
   ssh_port              = 22
   ssh_timeout           = "1800s"
-  ssh_username          = "vagrant"
+  enable_dynamic_memory = true
+  enable_secure_boot    = false
   switch_name           = "Default switch"
-  vm_name               = "packer-${var.name}"
+  generation            = "2"
+  output_directory      = "builds/${var.name}-hyperv"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
 source "virtualbox-iso" "vm" {
   boot_command     = ["<esc><wait>", "<esc><wait>", "<enter><wait>", "/install/vmlinuz<wait>", " auto<wait>", " console-setup/ask_detect=false<wait>", " console-setup/layoutcode=us<wait>", " console-setup/modelcode=pc105<wait>", " debconf/frontend=noninteractive<wait>", " debian-installer=en_US<wait>", " fb=false<wait>", " initrd=/install/initrd.gz<wait>", " kbd-chooser/method=us<wait>", " keyboard-configuration/layout=USA<wait>", " keyboard-configuration/variant=USA<wait>", " locale=en_US<wait>", " netcfg/get_domain=vm<wait>", " netcfg/get_hostname=vagrant<wait>", " grub-installer/bootdev=/dev/sda<wait>", " noapic<wait>", " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>", " -- <wait>", "<enter><wait>"]
-  boot_wait        = "10s"
+  boot_wait        = "5s"
   communicator     = "ssh"
+  vm_name          = "packer-${var.name}"
   cpus             = "${var.cpus}"
+  memory           = "${var.memory}"
   disk_size        = "${var.disk_size}"
-  guest_os_type    = "Ubuntu_64"
-  headless         = false
-  http_directory   = "http"
   iso_urls         = "${var.iso_urls}"
   iso_checksum     = "${var.iso_checksum}"
-  memory           = "${var.memory}"
-  output_directory = "builds/${var.name}-virtualbox"
-  shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
+  headless         = false
+  http_directory   = "http"
+  ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_port         = 22
   ssh_timeout      = "1800s"
-  ssh_username     = "vagrant"
-  vm_name          = "packer-${var.name}"
+  guest_os_type    = "Ubuntu_64"
+  output_directory = "builds/${var.name}-virtualbox"
+  shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
 build {
