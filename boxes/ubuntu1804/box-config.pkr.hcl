@@ -102,8 +102,14 @@ build {
     scripts           = ["scripts/update.sh", "scripts/sshd.sh", "scripts/networking.sh", "scripts/sudoers.sh", "scripts/vagrant.sh", "scripts/vmtools.sh", "scripts/cleanup.sh", "scripts/minimize.sh", "scripts/swapoff.sh"]
     expect_disconnect = true
   }
+  post-processors {
+    post-processor "vagrant" {
+      output = "builds/${var.name}-{{.Provider}}.box"
+    }
 
-  post-processor "vagrant" {
-    output = "builds/${var.name}-${source.type}.box"
+    post-processor "vagrant-cloud" {
+      box_tag = "maroskukan/ubuntu1804"
+      version = "${var.version}"
+    }
   }
 }
