@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "ubuntu1804" do |ubuntu1804|
     # VM Shared Configuration
-    ubuntu1804.vm.box = "file://builds/ubuntu1804.box"
+    ubuntu1804.vm.box = "maroskukan/ubuntu1804"
     ubuntu1804.vm.hostname = "ubuntu1804"
 
     # Hyper-V VM Specific Configuration
