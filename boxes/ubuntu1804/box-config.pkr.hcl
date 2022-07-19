@@ -33,11 +33,6 @@ variable "https_proxy" {
   default = "${env("https_proxy")}"
 }
 
-variable "name" {
-  type    = string
-  default = "ubuntu1804"
-}
-
 variable "no_proxy" {
   type    = string
   default = "${env("no_proxy")}"
