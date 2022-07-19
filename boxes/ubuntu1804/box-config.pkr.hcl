@@ -44,7 +44,7 @@ variable "no_proxy" {
 }
 
 variable "iso_urls" {
-  type = list
+  type = list(string)
   default = ["iso/ubuntu-18.04.5-server-amd64.iso", "https://old-releases.ubuntu.com/releases/18.04.5/ubuntu-18.04.5-server-amd64.iso"]
 }
 
