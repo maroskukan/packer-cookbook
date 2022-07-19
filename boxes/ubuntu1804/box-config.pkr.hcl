@@ -99,7 +99,7 @@ build {
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    scripts           = ["scripts/update.sh", "scripts/motd.sh", "scripts/sshd.sh", "scripts/networking.sh", "scripts/sudoers.sh", "scripts/vagrant.sh", "scripts/hyperv.sh", "scripts/cleanup.sh", "scripts/minimize.sh", "scripts/swapoff.sh"]
+    scripts           = ["scripts/update.sh", "scripts/sshd.sh", "scripts/networking.sh", "scripts/sudoers.sh", "scripts/vagrant.sh", "scripts/vmtools.sh", "scripts/cleanup.sh", "scripts/minimize.sh", "scripts/swapoff.sh"]
     expect_disconnect = true
   }
 
