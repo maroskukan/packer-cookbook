@@ -27,8 +27,5 @@ EOF
 rm -rf /var/log/unattended-upgrades;
 apt-get -y purge unattended-upgrades;
 
-# Upgrade all installed packages incl. kernel and kernel headers
-#apt-get -y dist-upgrade -o Dpkg::Options::="--force-confnew";
-apt-get -y upgrade
-
-#reboot
+# Upgrade all installed packages
+apt-get -y upgrade;
