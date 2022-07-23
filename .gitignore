@@ -4,5 +4,5 @@
 # Packer related artifacts
 packer_cache
 *.box
-iso/*
+*.iso
 .vagrant/*
