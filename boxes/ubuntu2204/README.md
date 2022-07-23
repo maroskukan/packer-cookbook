@@ -1,4 +1,4 @@
-# Ubuntu 22.04 LTS (Jammy Jellyfish) Vagrat Box
+# Ubuntu 22.04 LTS (Jammy Jellyfish) Vagrant Box
 
 Current Ubuntu Version Used: 22.04
 
