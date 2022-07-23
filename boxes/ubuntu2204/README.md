@@ -16,9 +16,12 @@ Current Ubuntu Version Used: 22.04
 # Setup Access token
 $ENV:VAGRANT_CLOUD_TOKEN = "your-vagrant-cloud-access-token"
 
+# Setup Box version
+$ENV:BOX_VERSION = "0.0.1"
+
 # Validate
 packer validate .\box-config.pkr.hcl
 
 # Build and push
-packer build -var 'version=0.0.1' .\box-config.pkr.hcl
+packer build .\box-config.pkr.hcl
 ```
