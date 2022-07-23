@@ -1,6 +1,6 @@
 variable "version" {
   type    = string
-  default = ""
+  default = "${env("BOX_VERSION")}"
 }
 
 variable "name" {
@@ -64,7 +64,7 @@ source "hyperv-iso" "vm" {
   disk_size             = "${var.disk_size}"
   iso_urls              = "${var.iso_urls}"
   iso_checksum          = "${var.iso_checksum}"
-  headless              = false
+  headless              = true
   http_directory        = "http"
   ssh_username          = "vagrant"
   ssh_password          = "vagrant"
@@ -91,6 +91,10 @@ build {
   post-processors {
     post-processor "vagrant" {
       output = "builds/${var.name}-{{.Provider}}.box"
+    }
+    post-processor "vagrant-cloud" {
+      box_tag = "maroskukan/${var.name}"
+      version = "${var.version}"
     }
   }
 }
