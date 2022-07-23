@@ -1109,3 +1109,49 @@ sudo virt-install \
 virsh list
 virsh domifaddr <domain>
 ```
+
+### Extending LVM Partitions
+
+```bash
+# Verify the current partition size
+df -h /
+Filesystem                         Size  Used Avail Use% Mounted on
+/dev/mapper/ubuntu--vg-ubuntu--lv   40G  3.7G   35G  10% /
+
+# Verify the volume group free (remaining) size
+sudo vgdisplay 
+  --- Volume group ---
+  VG Name               ubuntu-vg
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  3
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                1
+  Open LV               1
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               <60.95 GiB
+  PE Size               4.00 MiB
+  Total PE              15602
+  Alloc PE / Size       10361 / 40.47 GiB
+  Free  PE / Size       5241 / 20.47 GiB
+  VG UUID               vxXC56-9R5I-9l30-TGzA-Bnyp-G3e0-W4RsTi
+
+# Extend the partition and resize the filesystem
+sudo lvextend -L +10G /dev/mapper/ubuntu--vg-ubuntu--lv -r
+  Size of logical volume ubuntu-vg/ubuntu-lv changed from 40.47 GiB (10361 extents) to 50.47 GiB (12921 extents).
+  Logical volume ubuntu-vg/ubuntu-lv successfully resized.
+resize2fs 1.46.5 (30-Dec-2021)
+Filesystem at /dev/mapper/ubuntu--vg-ubuntu--lv is mounted on /; on-line resizing required
+old_desc_blocks = 6, new_desc_blocks = 7
+The filesystem on /dev/mapper/ubuntu--vg-ubuntu--lv is now 13231104 (4k) blocks long.
+
+# Verify the current partition size
+df -h /
+Filesystem                         Size  Used Avail Use% Mounted on
+/dev/mapper/ubuntu--vg-ubuntu--lv   50G  3.7G   44G   8% /
+```
