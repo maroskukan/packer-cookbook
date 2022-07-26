@@ -1,5 +1,11 @@
 #!/bin/sh -eux
 
+# Delete hyper-v tooling when using different builder
+if [ "$PACKER_BUILDER_TYPE" != "hyperv-iso" ]; then
+    apt-get -y remove linux-image-virtual linux-tools-virtual linux-cloud-tools-virtual
+fi
+
+
 # Delete all Linux headers
 dpkg --list \
   | awk '{ print $2 }' \
@@ -27,7 +33,7 @@ dpkg --list \
     | grep -- '-dev$' \
     | xargs apt-get -y purge;
 
-# delete docs packages
+# Delete docs packages
 dpkg --list \
     | awk '{ print $2 }' \
     | grep -- '-doc$' \
@@ -40,7 +46,7 @@ apt-get -y purge libx11-data xauth libxmuu1 libxcb1 libx11-6 libxext6;
 apt-get -y purge popularity-contest command-not-found friendly-recovery bash-completion laptop-detect;
 
 
-# Exlude the files we don't need w/o uninstalling linux-firmware
+# Exclude the files we don't need w/o uninstalling linux-firmware
 echo "==> Setup dpkg excludes for linux-firmware"
 cat <<_EOF_ | cat >> /etc/dpkg/dpkg.cfg.d/excludes
 #BENTO-BEGIN
@@ -71,7 +77,12 @@ truncate -s 0 /etc/machine-id
 # remove the contents of /tmp and /var/tmp
 rm -rf /tmp/* /var/tmp/*
 
-# clear the history so our install isn't there
+# remove vbox build artifacts
+if [ -f "$HOME/VBoxGuestAdditions.iso" ]; then
+    rm -f "$HOME/VBoxGuestAdditions.iso"
+fi
+
+# Clear the history
 export HISTSIZE=0
 rm -f /root/.wget-hsts
 
