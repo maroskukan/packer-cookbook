@@ -1,8 +1,3 @@
-# variable "version" {
-#   type    = string
-#   default = "${env("BOX_VERSION")}"
-# }
-
 locals {
   version = formatdate("YYYY.MM.DD", timestamp())
 }
