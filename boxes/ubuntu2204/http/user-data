@@ -5,14 +5,18 @@ autoinstall:
   keyboard:
     layout: us
     variant: us
-  
+
+  early-commands:
+    # SSH Server needs to be disabled for vbox build
+    - systemctl stop ssh
+
   ssh:
     install-server: true
     allow-pw: true
-  
+
   identity:
     hostname: ubuntu2004
-    password: "$6$8P/WYeedh2vMmmn4$5LZtQr7MvzvtE2AGkQIlXJjZKyOUOyHwOcu5WSYBO7ls3.rgnGfl.236U0uAGbFY2ZCJt55tFBeJ1P1j.WQp/1"
+    password: "$6$8P/WYeedh2vMmmn4$5LZtQr7MvzvtE2AGkQIlXJjZKyOUOyHwOcu5WSYBO7ls3.rgnGfl.236U0uAGbFY2ZCJt55tFBeJ1P1j.WQp/1" #vagrant
     username: vagrant
 
   storage:
@@ -22,10 +26,11 @@ autoinstall:
       size: 0
 
   packages:
+    # The following packages are required for hyperv build
     - linux-image-virtual
     - linux-tools-virtual
     - linux-cloud-tools-virtual
 
   late-commands:
-    - echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/99_vagrant # allow sudo without password
+    - echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/99_vagrant
     - chmod 440 /target/etc/sudoers.d/99_vagrant
