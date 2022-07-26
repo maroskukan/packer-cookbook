@@ -2,12 +2,12 @@
 
 
 # Delete hyper-v tooling when using different builder
-if [ "$PACKER_BUILDER_TYPE" -ne "hyperv-iso" ]; then
+if [ "$PACKER_BUILDER_TYPE" != "hyperv-iso" ]; then
     apt-get -y remove linux-image-virtual linux-tools-virtual linux-cloud-tools-virtual
 fi
 
 # Delete virtual box tools artifacts if present
-if [ "$PACKER_BUILDER_TYPE" -eq "virtualbox-iso" ]; then
+if [ "$PACKER_BUILDER_TYPE" = "virtualbox-iso" ]; then
     if [ -f "$HOME/VBoxGuestAdditions.iso" ]; then
     rm -f "$HOME/VBoxGuestAdditions.iso"
     fi
