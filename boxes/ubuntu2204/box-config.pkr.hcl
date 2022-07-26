@@ -1,6 +1,10 @@
-variable "version" {
-  type    = string
-  default = "${env("BOX_VERSION")}"
+# variable "version" {
+#   type    = string
+#   default = "${env("BOX_VERSION")}"
+# }
+
+locals {
+  version = formatdate("YYYY.MM.DD", timestamp())
 }
 
 variable "name" {
@@ -121,7 +125,7 @@ build {
     }
     post-processor "vagrant-cloud" {
       box_tag = "maroskukan/${var.name}"
-      version = "${var.version}"
+      version = "${local.version}"
     }
   }
 }
