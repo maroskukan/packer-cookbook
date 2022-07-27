@@ -6,6 +6,15 @@ autoinstall:
     layout: us
     variant: us
 
+  apt:
+      geoip: false
+      primary:
+          - arches: [default]
+            uri: https://mirrors.edge.kernel.org/ubuntu/
+      security:
+          - arches: [default]
+            uri: https://mirrors.edge.kernel.org/ubuntu/
+
   early-commands:
     # SSH Server needs to be disabled for vbox build
     - systemctl stop ssh
