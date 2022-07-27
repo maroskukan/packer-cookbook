@@ -1,13 +1,11 @@
 # Ubuntu 22.04 LTS (Jammy Jellyfish) Vagrant Box
 
-Current Ubuntu Version Used: 22.04
 
-```json
-{
-    "version": "22.04",
-    "installer": "subiquity",
-}
+```yml
+version: 22.04
+installer: subiquity
 ```
+
 
 
 ## Usage
