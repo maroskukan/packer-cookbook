@@ -3,6 +3,9 @@
 
 Vagrant.configure("2") do |config|
 
+  # Provider Shared Configuration
+  config.ssh.insert_key = false
+
   # Hyper-V Provider Specific Configuration
   config.vm.provider "hyperv" do |h|
     h.enable_virtualization_extensions = true
