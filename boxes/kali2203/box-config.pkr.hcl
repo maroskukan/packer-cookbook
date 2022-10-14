@@ -88,6 +88,7 @@ source "virtualbox-iso" "vm" {
   ssh_port         = 22
   ssh_timeout      = "1800s"
   guest_os_type    = "Debian_64"
+  firmware         = "efi"
   output_directory = "builds/${var.name}-virtualbox"
   shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
 }
