@@ -1,5 +1,20 @@
 # Metasploitable2 Vagrant Box
 
+- [Metasploitable2 Vagrant Box](#metasploitable2-vagrant-box)
+  - [Introduction](#introduction)
+  - [Disk Conversion](#disk-conversion)
+  - [Create VM](#create-vm)
+  - [Customize OS](#customize-os)
+    - [Users](#users)
+    - [Filesystem](#filesystem)
+  - [Box Packaging](#box-packaging)
+    - [Vagrant Box Directory](#vagrant-box-directory)
+    - [VM Export](#vm-export)
+    - [Box exporting](#box-exporting)
+  - [Box testing](#box-testing)
+  - [Vagrant Cloud](#vagrant-cloud)
+
+## Introduction
 This build is unique as it starts with a predefined Virtual Box Virtual Machine [files](https://docs.rapid7.com/metasploit/metasploitable-2/) based on top of `Ubuntu 8.04` running `Kernel 2.6.24-16-server` provided by Rapid7 with respect to [HD Moore](https://twitter.com/hdmoore).
 
 In order to produce a fully functional Vagrant Box for Hyper-V environment follow these steps from a Windows based environment.
@@ -93,3 +108,273 @@ Finally `sync` the filesystem and `poweroff` the machine`.
 sync
 poweroff
 ```
+
+
+## Box Packaging
+
+### Vagrant Box Directory
+
+Start by create a destination folder structure that Vagrant recognizes. If you want to upload this box to Vagrant cloud it make sense to include your username and box name as follows:
+
+```powershell
+$VagrantCloudUser = 'maroskukan'
+$VagrantBoxName = 'metasploitable2'
+$VagrantBoxVersion = '2022.10.17'
+$VagrantBoxProvider = 'hyperv'
+```
+
+Create required folders.
+
+```powershell
+# Create container folder
+New-Item -ItemType Directory `
+         -Path $HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName
+
+# Create version folder and metadata
+New-Item -ItemType Directory `
+         -Path $HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/$VagrantBoxVersion/$VagrantBoxProvider/'Virtual Hard Disks'
+
+New-Item -ItemType Directory `
+         -Path $HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/$VagrantBoxVersion/$VagrantBoxProvider/'Virtual Machines'
+```
+
+Create required metadata.
+
+```powershell
+# Create metadata
+"https://vagrantcloud.com/$VagrantCloudUser/$VagrantBoxName" `
+| Add-Content $HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/metadata_url
+
+'{"provider":"hyperv"}' `
+| Add-Content $HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/$VagrantBoxVersion/$VagrantBoxProvider/metadata.json
+```
+
+Optionally, you can add more information to specific version and provider. Place these files in provider folder.
+
+`$HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/$VagrantBoxVersion/$VagrantBoxProvider/info.json`
+```json
+{
+ "Author": "Maros Kukan",
+ "Website": "https://buldogchef.com",
+ "Artifacts": "https://vagrantcloud.com/maroskukan/",
+ "Repository": "https://github.com/maroskukan/packer-cookbook",
+ "Description": "Packaged metasploitable2 VM for Hyper-V."
+}
+```
+
+`$HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/$VagrantBoxVersion/$VagrantBoxProvider/Vagrantfile`
+```ruby
+# The contents below were provided by the Packer Vagrant post-processor
+
+
+# The contents below (if any) are custom contents provided by the
+# Packer template during image build.
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+  config.vm.network "public_network", bridge: "Default Switch"
+
+  # Hyper-V Provider Specific Overrides
+  config.vm.provider "hyperv" do |h, override|
+    h.enable_virtualization_extensions = true
+    h.linked_clone = true
+    h.cpus = 2
+    h.memory = 2048
+    h.maxmemory = 2048
+  end
+end
+```
+
+### VM Export
+
+In order to repackage a Virtual Machine files later on, you need to ensure there are no associated checkpoints. In this example the VM name is set to `meta`.
+
+```powershell
+$VMName = 'meta'
+```
+
+```powershell
+Get-VMSnapshot -vmname $VMName | Remove-VMSnapshot
+```
+
+Next, retrieve the Virtual Machine ID. You will need this to identify the required configuration files that Hyper-V creates.
+
+```powershell
+$VMid = $(Get-VM $VMName | Select -ExpandProperty VMid).Guid
+```
+
+Next, copy existing VM files.
+
+```powershell
+Get-ChildItem -path "$Env:ProgramData\Microsoft\Windows\Hyper-V\Virtual Machines" ${VMid}* | where { !$_.PSisContainer } | copy-item -destination $HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/$VagrantBoxVersion/$VagrantBoxProvider/'Virtual Machines'
+```
+
+Next, copy the disk file you created in disk conversion [step](#disk-conversion).
+
+```powershell
+copy-item Metasploitable.vhdx $HOME/.vagrant.d/boxes/$VagrantCloudUser-VAGRANTSLASH-$VagrantBoxName/$VagrantBoxVersion/$VagrantBoxProvider/'Virtual Hard Disks'
+```
+
+We now have all we need from the source VM. You can safely delete it.
+
+```powershell
+Remove-VM $VMName -Force
+```
+
+
+### Box exporting
+
+If everything worked out in previous steps, you should now see a new box in the list
+
+```powershell
+vagrant box list | findstr $VagrantCloudUser/$VagrantBoxName
+```
+
+You should see output similar to below:
+
+```powershell
+maroskukan/metasploitable2    (hyperv, 2022.10.17)
+```
+
+To create a `.box` file which you can upload to Vagrant cloud use the `repackage` argument.
+
+```powershell
+vagrant box repackage $VagrantCloudUser/$VagrantBoxName $VagrantBoxProvider $VagrantBoxVersion
+```
+
+This will create a `package.box` file in the current working directory. Once we are done with functional testing we will upload this file to Vagrant Cloud.
+
+
+## Box testing
+
+Lets start with importing the box file into Vagrant.
+
+```powershell
+vagrant box add $VagrantCloudUser/$VagrantBoxName-test file:///$pwd/package.box
+```
+
+Then create simple Vagrantfile.
+
+```ruby
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # Hyper-V Provider Specific Configuration
+  config.vm.provider "hyperv" do |h|
+    h.enable_virtualization_extensions = true
+    h.linked_clone = true
+    h.memory = 2048
+    h.maxmemory = 2048
+  end
+
+  config.vm.define "meta" do |meta|
+    # VM Shared Configuration
+    meta.vm.box = "maroskukan/metasploitable2-test"
+    meta.vm.hostname = "metasploitable2"
+    # Hyper-V VM Specific Configuration
+    meta.vm.provider 'hyperv' do |h, override|
+      override.vm.synced_folder ".", "/vagrant", type: "rsync"
+      override.vm.network "public_network", bridge: "Default Switch"
+    end
+  end
+  config.ssh.insert_key = false
+end
+```
+
+Finally, provision the VM with `vagrant up`.
+
+```powershell
+vagrant up
+```
+
+You should see output similar to below:
+
+```powershell
+Bringing machine 'meta' up with 'hyperv' provider...
+==> meta: Verifying Hyper-V is enabled...
+==> meta: Verifying Hyper-V is accessible...
+==> meta: Importing a Hyper-V instance
+    meta: Creating and registering the VM...
+    meta: Successfully imported VM
+    meta: Configuring the VM...
+    meta: Setting VM Enhanced session transport type to disabled/default (VMBus)
+==> meta: Starting the machine...
+==> meta: Waiting for the machine to report its IP address...
+    meta: Timeout: 120 seconds
+    meta: IP: 172.17.139.78
+==> meta: Waiting for machine to boot. This may take a few minutes...
+    meta: SSH address: 172.17.139.78:22
+    meta: SSH username: vagrant
+    meta: SSH auth method: private key
+==> meta: Machine booted and ready!
+==> meta: Setting hostname...
+The following SSH command responded with a non-zero exit status.
+Vagrant assumes that this means the command failed!
+
+          grep -w 'metasploitable2' /etc/hosts || {
+            for i in 1 2 3 4 5; do
+grep -w "127.0.${i}.1" /etc/hosts || {
+  echo "127.0.${i}.1 metasploitable2 metasploitable2" >> /etc/hosts
+  break
+}
+            done
+          }
+
+
+Stdout from the command:
+
+
+
+Stderr from the command:
+```
+
+> **Note**: It is expected that the VM customizations performed by Vagrant fail. The reason is that Vagrant uses tools that are dependent systemd and the source VM runs on old version of Ubuntu that does not have it installed. Nevertheless this should not affect the usability.
+
+Finally, verify that you are able to log in to the VM and gain root privileges.
+
+```powershell
+vagrant ssh
+Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To access official Ubuntu documentation, please visit:
+http://help.ubuntu.com/
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+```
+
+```bash
+echo 'vagrant' | sudo -S id
+[sudo] password for vagrant:
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+This concludes the testing phase, feel free to shutdown the VM and cleanup the environment.
+
+```powershell
+vagrant destroy -f
+vagrant box remove $VagrantCloudUser/$VagrantBoxName-test
+```
+
+
+## Vagrant Cloud
+
+To make this box available for other Vagrant users, we need to upload the `package.box` file to Vagrant cloud with its hash for file integrity.
+
+```powershell
+$BoxFH = Get-FileHash .\package.box
+$BoxFH.Hash
+```
+
+Creating a new box and version using Web UI is straightforward. Once the file upload is completed, the box is ready to use. You can use the included `Vagrantfile` as an example.
