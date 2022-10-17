@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+    # Hyper-V Provider Specific Configuration
+    config.vm.provider "hyperv" do |h|
+      h.enable_virtualization_extensions = true
+      h.linked_clone = true
+      h.memory = 2048
+      h.maxmemory = 2048
+    end
+
+    config.vm.define "meta" do |meta|
+      # VM Shared Configuration
+      meta.vm.box = "maroskukan/metasploitable2"
+      meta.vm.hostname = "metasploitable2"
+      # Hyper-V VM Specific Configuration
+      meta.vm.provider 'hyperv' do |h, override|
+        override.vm.synced_folder ".", "/vagrant", type: "rsync"
+        override.vm.network "public_network", bridge: "Default Switch"
+      end
+    end
+    config.ssh.insert_key = false
+    # VM Shared Provisioning
+    config.vm.provision "shell", inline: "cat /etc/os-release"
+end
