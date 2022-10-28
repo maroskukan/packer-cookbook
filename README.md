@@ -68,6 +68,8 @@
   - [Tips](#tips)
     - [Salted Hash for Kickstart](#salted-hash-for-kickstart)
     - [Unattended installation](#unattended-installation)
+    - [Extending LVM Partitions](#extending-lvm-partitions)
+    - [Vagrant on Windows](#vagrant-on-windows)
 
 ## Introduction
 
@@ -1086,6 +1088,7 @@ clear-text-pw: test
 $6$BfeENzHTV2I.T6Ec$EQXrqQ/YiZM4lBOlBTZmcJtkdqjOo2Ja.3Y3poxb2pC9APzSNoFvrE4Otqhf9vfcCUKO8Ge7fmFsybxxhu3nO.
 ```
 
+
 ### Unattended installation
 
 ```bash
@@ -1110,6 +1113,7 @@ virsh list
 virsh domifaddr <domain>
 ```
 
+
 ### Extending LVM Partitions
 
 ```bash
@@ -1119,10 +1123,10 @@ Filesystem                         Size  Used Avail Use% Mounted on
 /dev/mapper/ubuntu--vg-ubuntu--lv   40G  3.7G   35G  10% /
 
 # Verify the volume group free (remaining) size
-sudo vgdisplay 
+sudo vgdisplay
   --- Volume group ---
   VG Name               ubuntu-vg
-  System ID             
+  System ID
   Format                lvm2
   Metadata Areas        1
   Metadata Sequence No  3
@@ -1154,4 +1158,19 @@ The filesystem on /dev/mapper/ubuntu--vg-ubuntu--lv is now 13231104 (4k) blocks 
 df -h /
 Filesystem                         Size  Used Avail Use% Mounted on
 /dev/mapper/ubuntu--vg-ubuntu--lv   50G  3.7G   44G   8% /
+```
+
+
+### Vagrant on Windows
+
+When you try to access a VM provisioned by Vagrant on Windows with a dynamically generated key you will receive the following error.
+
+```powershell
+vagrant@172.17.134.225: Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+```
+
+In order to fix it you need to update the following environment variable.
+
+```powershell
+set VAGRANT_PREFER_SYSTEM_BIN=0
 ```
