@@ -1,6 +1,6 @@
-# Kali 22.03 Vagrat Box
+# Kali 22.03 Vagrant Box
 
-Current Kali Version Used: 22.03
+Current Kali Version Used: 22.03.
 
 ## Usage
 

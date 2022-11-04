@@ -48,7 +48,7 @@ variable "iso_checksum" {
 }
 
 source "hyperv-iso" "vm" {
-  boot_command          = ["<esc><wait>", "c", "<wait>", "linux /install.amd/vmlinuz ", "net.ifnames=0 ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ", "simple-cdd/profiles=kali,offline ", "desktop=xfce auto=true ", "priority=critical vga=768 ", "--- quiet<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
+  boot_command          = ["<esc><wait>", "c", "<wait>", "linux /install.amd/vmlinuz ", "net.ifnames=0 ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ", "simple-cdd/profiles=kali,offline ", "desktop=xfce auto=true ", "priority=critical vga=768 ", "--- quiet<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
   boot_wait             = "5s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
@@ -72,7 +72,7 @@ source "hyperv-iso" "vm" {
 }
 
 source "virtualbox-iso" "vm" {
-  boot_command          = ["<esc><wait>", "c", "<wait>", "linux /install.amd/vmlinuz ", "net.ifnames=0 ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ", "simple-cdd/profiles=kali,offline ", "desktop=xfce auto=true ", "priority=critical vga=768 ", "--- quiet<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
+  boot_command          = ["<esc><wait>", "c", "<wait>", "linux /install.amd/vmlinuz ", "net.ifnames=0 ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ", "simple-cdd/profiles=kali,offline ", "desktop=xfce auto=true ", "priority=critical vga=768 ", "--- quiet<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
   boot_wait        = "5s"
   communicator     = "ssh"
   vm_name          = "packer-${var.name}"
@@ -99,7 +99,7 @@ build {
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    scripts           = ["scripts/sshd.sh", "scripts/vagrant.sh", "scripts/cleanup.sh", "scripts/minimize.sh", "scripts/swapoff.sh"]
+    scripts           = ["scripts/software.sh", "scripts/sshd.sh", "scripts/vagrant.sh", "scripts/cleanup.sh", "scripts/minimize.sh", "scripts/swapoff.sh"]
     expect_disconnect = true
   }
   post-processors {
