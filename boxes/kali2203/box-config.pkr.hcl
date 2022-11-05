@@ -48,8 +48,8 @@ variable "iso_checksum" {
 }
 
 source "hyperv-iso" "vm" {
-  boot_command          = ["<esc><wait>", "c", "<wait>", "linux /install.amd/vmlinuz ", "net.ifnames=0 ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ", "simple-cdd/profiles=kali,offline ", "desktop=xfce auto=true ", "priority=critical vga=768 ", "--- quiet<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
-  boot_wait             = "5s"
+  boot_command          = ["<esc><wait>", "install <wait>", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ", "locale=en_US ", "keymap=us ", "hostname=kali ", "domain='' ", "<enter>"]
+  boot_wait             = "25s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
@@ -66,7 +66,7 @@ source "hyperv-iso" "vm" {
   enable_dynamic_memory = true
   enable_secure_boot    = false
   switch_name           = "Default switch"
-  generation            = "2"
+  generation            = "1"
   output_directory      = "builds/${var.name}-hyperv"
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
