@@ -70,6 +70,7 @@
     - [Unattended installation](#unattended-installation)
     - [Extending LVM Partitions](#extending-lvm-partitions)
     - [Vagrant on Windows](#vagrant-on-windows)
+    - [Packer and vmware-iso builder](#packer-and-vmware-iso-builder)
 
 ## Introduction
 
@@ -1174,3 +1175,25 @@ In order to fix it you need to update the following environment variable.
 ```powershell
 set VAGRANT_PREFER_SYSTEM_BIN=0
 ```
+
+
+### Packer and vmware-iso builder
+
+When running packer with vmware-iso builder for the first time, you may encounter the following error:
+
+```powershell
+...
+==> vmware-iso.vm: Building and writing VMX file
+==> vmware-iso.vm: Could not determine network mappings from files in path: C:/Program Files (x86)/VMware/VMware Workstation
+==> vmware-iso.vm: Deleting output directory...
+Build 'vmware-iso.vm' errored after 4 seconds 948 milliseconds: Could not determine network mappings from files in path: C:/Program Files (x86)/VMware/VMware Workstation
+
+==> Wait completed after 4 seconds 948 milliseconds
+
+==> Some builds didn't complete successfully and had errors:
+--> vmware-iso.vm: Could not determine network mappings from files in path: C:/Program Files (x86)/VMware/VMware Workstation
+
+...
+```
+
+The solution is to run the `Virtual Network Editor` as Administrator so the mappings file will be generated.
