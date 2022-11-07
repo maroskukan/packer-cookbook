@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # Provider Shared Configuration
+  config.ssh.insert_key = false
+
+  # Hyper-V Provider Specific Configuration
+  config.vm.provider "hyperv" do |h|
+    h.vmname = "vg_ubuntu2210"
+    h.enable_virtualization_extensions = true
+    h.linked_clone = true
+    h.memory = 2048
+    h.maxmemory = 2048
+  end
+
+  config.vm.define "ubuntu2210" do |ubuntu2210|
+    # VM Shared Configuration
+    ubuntu2210.vm.box = "maroskukan/ubuntu2210"
+    ubuntu2210.vm.hostname = "ubuntu2210"
+
+    # Hyper-V VM Specific Configuration
+    ubuntu2210.vm.provider 'hyperv' do |h, override|
+      override.vm.box = "file://builds/ubuntu2210-hyperv.box"
+      override.vm.network "public_network", bridge: "Default Switch"
+      override.vm.synced_folder '.', '/vagrant', disabled: true
+    end
+  end
+
+  # VM Shared Provisioning
+  config.vm.provision "shell", inline: "cat /etc/os-release"
+end
