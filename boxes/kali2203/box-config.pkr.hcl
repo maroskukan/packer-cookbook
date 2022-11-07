@@ -48,7 +48,12 @@ variable "iso_checksum" {
 }
 
 source "hyperv-iso" "vm" {
-  boot_command          = ["<esc><wait>", "install <wait>", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ", "locale=en_US ", "keymap=us ", "hostname=kali ", "domain='' ", "<enter>"]
+  boot_command          = [
+                            "<esc><wait>", "install <wait>",
+                            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ",
+                            "locale=en_US ", "keymap=us ", "hostname=kali ", "domain='' ",
+                            "<enter>"
+                          ]
   boot_wait             = "25s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
@@ -71,30 +76,8 @@ source "hyperv-iso" "vm" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
-source "virtualbox-iso" "vm" {
-  boot_command          = ["<esc><wait>", "c", "<wait>", "linux /install.amd/vmlinuz ", "net.ifnames=0 ", "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ", "simple-cdd/profiles=kali,offline ", "desktop=xfce auto=true ", "priority=critical vga=768 ", "--- quiet<enter>", "initrd /install.amd/initrd.gz<enter>", "boot<enter>"]
-  boot_wait        = "5s"
-  communicator     = "ssh"
-  vm_name          = "packer-${var.name}"
-  cpus             = "${var.cpus}"
-  memory           = "${var.memory}"
-  disk_size        = "${var.disk_size}"
-  iso_urls         = "${var.iso_urls}"
-  iso_checksum     = "${var.iso_checksum}"
-  headless         = false
-  http_directory   = "http"
-  ssh_username     = "vagrant"
-  ssh_password     = "vagrant"
-  ssh_port         = 22
-  ssh_timeout      = "1800s"
-  guest_os_type    = "Debian_64"
-  firmware         = "efi"
-  output_directory = "builds/${var.name}-virtualbox"
-  shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
-}
-
 build {
-  sources = ["source.hyperv-iso.vm", "source.virtualbox-iso.vm"]
+  sources = ["source.hyperv-iso.vm"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
@@ -107,9 +90,9 @@ build {
       output = "builds/${var.name}-{{.Provider}}.box"
     }
 
-    post-processor "vagrant-cloud" {
-      box_tag = "maroskukan/kali2203"
-      version = "${local.version}"
-    }
+    // post-processor "vagrant-cloud" {
+    //   box_tag = "maroskukan/kali2203"
+    //   version = "${local.version}"
+    // }
   }
 }
