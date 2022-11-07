@@ -1,6 +1,13 @@
 # Kali 22.03 Vagrant Box
 
-Current Kali Version Used: 22.03.
+
+
+```yml
+version: 22.03
+installer: debian-installer
+providers:
+  - hyperv
+```
 
 ## Usage
 
