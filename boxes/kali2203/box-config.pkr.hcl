@@ -51,7 +51,7 @@ source "hyperv-iso" "vm" {
   boot_command          = [
                             "<esc><wait>", "install <wait>",
                             "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ",
-                            "locale=en_US ", "keymap=us ", "hostname=kali ", "domain='' ",
+                            "locale=en_US ", "keymap=us ", "hostname=${var.name} ", "domain='' ",
                             "<enter>"
                           ]
   boot_wait             = "25s"
@@ -76,8 +76,47 @@ source "hyperv-iso" "vm" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
+source "vmware-iso" "vm" {
+  boot_command          = [
+                            "<esc><wait>", "install <wait>",
+                            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed-minimal.cfg ",
+                            "locale=en_US ", "keymap=us ", "hostname=${var.name} ", "domain='' ",
+                            "<enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  vnc_disable_password  = true
+  vnc_bind_address      = "127.0.0.1"
+  vmx_data_post         = {
+                          "virtualHW.version": "12",
+                          "cleanShutdown": "true",
+                          "softPowerOff": "true",
+                          "ethernet0.virtualDev": "e1000",
+                          "ethernet0.startConnected": "true",
+                          "ethernet0.wakeonpcktrcv": "false"
+                          }
+  guest_os_type         = "ubuntu-64"
+  vmx_remove_ethernet_interfaces = true
+  version               = 12
+  tools_upload_flavor   = "linux"
+  output_directory      = "builds/${var.name}-hyperv"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
+}
+
 build {
-  sources = ["source.hyperv-iso.vm"]
+  sources = ["source.hyperv-iso.vm", "source.vmware-iso.vm"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
@@ -91,7 +130,7 @@ build {
     }
 
     // post-processor "vagrant-cloud" {
-    //   box_tag = "maroskukan/kali2203"
+    //   box_tag = "maroskukan/${var.name}"
     //   version = "${local.version}"
     // }
   }
