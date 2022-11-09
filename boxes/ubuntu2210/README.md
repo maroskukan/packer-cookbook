@@ -6,6 +6,7 @@ version: 22.10
 installer: subiquity
 providers:
   - hyperv
+  - vmware_desktop
 ```
 
 

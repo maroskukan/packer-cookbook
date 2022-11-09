@@ -6,6 +6,7 @@ version: 18.04
 installer: debian-installer
 providers:
   - hyperv
+  - vmware_desktop
 ```
 
 
