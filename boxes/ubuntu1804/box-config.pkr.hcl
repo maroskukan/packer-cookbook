@@ -91,8 +91,62 @@ source "hyperv-iso" "vm" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
+source "vmware-iso" "vm" {
+  boot_command          = [
+                            "<esc><wait>","<esc><wait>","<enter><wait>",
+                            "/install/vmlinuz<wait> ",
+                            "auto ",
+                            "console-setup/ask_detect=false ",
+                            "console-setup/layoutcode=us ",
+                            "console-setup/modelcode=pc105 ",
+                            "debconf/frontend=noninteractive ",
+                            "debian-installer=en_US ",
+                            "fb=false ",
+                            "initrd=/install/initrd.gz ",
+                            "kbd-chooser/method=us ",
+                            "keyboard-configuration/layout=USA ",
+                            "keyboard-configuration/variant=USA ",
+                            "locale=en_US ",
+                            "noapic ",
+                            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+                            "ipv6.disable_ipv6=1 net.ifnames=0 biosdevname=0 ",
+                            "netcfg/get_domain='' ", "netcfg/get_hostname=${var.name} ",
+                            "--- <enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  vnc_disable_password  = true
+  vnc_bind_address      = "127.0.0.1"
+  vmx_data_post         = {
+                          "virtualHW.version": "12",
+                          "cleanShutdown": "true",
+                          "softPowerOff": "true",
+                          "ethernet0.virtualDev": "e1000",
+                          "ethernet0.startConnected": "true",
+                          "ethernet0.wakeonpcktrcv": "false"
+                          }
+  guest_os_type         = "ubuntu-64"
+  vmx_remove_ethernet_interfaces = true
+  version               = 12
+  tools_upload_flavor   = "linux"
+  output_directory      = "builds/${var.name}-hyperv"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
+}
+
 build {
-  sources = ["source.hyperv-iso.vm"]
+  sources = ["source.hyperv-iso.vm", "source.vmware-iso.vm"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]

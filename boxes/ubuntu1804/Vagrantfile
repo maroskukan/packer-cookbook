@@ -16,6 +16,13 @@ Vagrant.configure("2") do |config|
     h.maxmemory = 2048
   end
 
+  # VMware Workstation Provider Specific Configuration
+  config.vm.provider "vmware_desktop" do |w|
+    w.vmx['displayname'] = "vagrant-ubuntu1804"
+    w.vmx['memsize'] = "2048"
+    w.vmx['numvcpus'] = "2"
+  end
+
   config.vm.define "ubuntu1804" do |ubuntu1804|
     # VM Shared Configuration
     ubuntu1804.vm.box = "maroskukan/ubuntu1804"
@@ -26,6 +33,12 @@ Vagrant.configure("2") do |config|
       override.vm.box = "file://builds/ubuntu1804-hyperv.box"
       override.vm.network "public_network", bridge: "Default Switch"
       override.vm.synced_folder '.', '/vagrant', disabled: true
+    end
+
+    # VMware Workstation VM Specific Configuration
+    ubuntu1804.vm.provider 'vmware_desktop' do |w, override|
+      override.vm.box = "file://builds/ubuntu1804-vmware.box"
+      override.vm.synced_folder ".", "/vagrant", disabled: true
     end
   end
 
