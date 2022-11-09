@@ -7,6 +7,7 @@ version: 22.03
 installer: debian-installer
 providers:
   - hyperv
+  - vmware_desktop
 ```
 
 ## Usage
