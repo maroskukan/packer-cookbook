@@ -1,13 +1,38 @@
-# Ubuntu 18.04 Vagrat Box
+# Ubuntu 18.04 LTS (Bionic Beaver) Vagrant Box
 
-Current Ubuntu Version Used: 18.04.6
+
+```yml
+version: 18.04
+installer: debian-installer
+providers:
+  - hyperv
+```
+
 
 ## Usage
+
+### Powershell
 
 ```powershell
 # Setup Access token
 $ENV:VAGRANT_CLOUD_TOKEN = "your-vagrant-cloud-access-token"
 
+# Validate
+packer validate .\box-config.pkr.hcl
+
 # Build and push
-packer build -var 'version=0.0.1' .\box-config.pkr.hcl
+packer build .\box-config.pkr.hcl
+```
+
+### Bash
+
+```bash
+# Setup Access token
+export VAGRANT_CLOUD_TOKEN = "your-vagrant-cloud-access-token"
+
+# Validate
+packer validate ./box-config.pkr.hcl
+
+# Build and push
+packer build ./box-config.pkr.hcl
 ```
