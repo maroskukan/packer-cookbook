@@ -29,3 +29,7 @@ VBOX_EXT_SHA256="$(tar -xOzf /tmp/Oracle_VM_VirtualBox_Extension_Pack-7.0.2.vbox
 
 vboxmanage extpack install --accept-license="$VBOX_EXT_SHA256" \
      /tmp/Oracle_VM_VirtualBox_Extension_Pack-"$VBOX_EXT_VERSION".vbox-extpack
+
+# Configure Vbox networking - this will create default hostonly network vboxnet0 - 192.168.51.0/24
+vboxmanage hostonlyif create
+ip address add 192.168.56.1/24 dev vboxnet0

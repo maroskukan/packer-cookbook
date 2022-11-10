@@ -69,7 +69,7 @@ source "hyperv-iso" "vm" {
                             "netcfg/get_domain='' ", "netcfg/get_hostname=${var.name} ",
                             "--- <enter>"
                           ]
-  boot_wait             = "5s"
+  boot_wait             = "10s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
@@ -113,7 +113,7 @@ source "vmware-iso" "vm" {
                             "netcfg/get_domain='' ", "netcfg/get_hostname=${var.name} ",
                             "--- <enter>"
                           ]
-  boot_wait             = "5s"
+  boot_wait             = "10s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
@@ -161,12 +161,12 @@ source "virtualbox-iso" "vm" {
                       "keyboard-configuration/variant=USA ",
                       "locale=en_US ",
                       "noapic ",
-                      "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+                      "preseed/url=http://192.168.56.1:{{ .HTTPPort }}/preseed.cfg ",
                       "ipv6.disable_ipv6=1 net.ifnames=0 biosdevname=0 ",
                       "netcfg/get_domain='' ", "netcfg/get_hostname=${var.name} ",
                       "--- <enter>"
                      ]
-  boot_wait        = "5s"
+  boot_wait        = "10s"
   communicator     = "ssh"
   vm_name          = "packer-${var.name}"
   cpus             = "${var.cpus}"
@@ -174,13 +174,22 @@ source "virtualbox-iso" "vm" {
   disk_size        = "${var.disk_size}"
   iso_urls         = "${var.iso_urls}"
   iso_checksum     = "${var.iso_checksum}"
-  headless         = true
+  headless         = false
   http_directory   = "http"
   ssh_username     = "vagrant"
   ssh_password     = "vagrant"
   ssh_port         = 22
   ssh_timeout      = "3600s"
   guest_os_type    = "Ubuntu_64"
+  hard_drive_interface = "sata"
+  vboxmanage      = [
+                      [
+                        "modifyvm",
+                        "{{.Name}}",
+                        "--vram",
+                        "64"
+                      ]
+                    ]
   output_directory = "builds/${var.name}-virtualbox"
   shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
 }
