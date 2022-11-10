@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
 
   # Hyper-V Provider Specific Configuration
   config.vm.provider "hyperv" do |h|
-    h.enable_virtualization_extensions = true
+    h.vmname = "vagrant-ubuntu2204"
     h.linked_clone = true
     h.memory = 2048
     h.maxmemory = 2048
