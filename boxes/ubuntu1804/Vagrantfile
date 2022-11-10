@@ -23,6 +23,13 @@ Vagrant.configure("2") do |config|
     w.vmx['numvcpus'] = "2"
   end
 
+  # Virtualbox Provider Specific Configuration
+  config.vm.provider "virtualbox" do |v|
+    v.name = "vagrant-ubuntu1804"
+    v.memory = 2048
+    v.cpus = 2
+  end
+
   config.vm.define "ubuntu1804" do |ubuntu1804|
     # VM Shared Configuration
     ubuntu1804.vm.box = "maroskukan/ubuntu1804"
@@ -38,6 +45,12 @@ Vagrant.configure("2") do |config|
     # VMware Workstation VM Specific Configuration
     ubuntu1804.vm.provider 'vmware_desktop' do |w, override|
       override.vm.box = "file://builds/ubuntu1804-vmware.box"
+      override.vm.synced_folder ".", "/vagrant", disabled: true
+    end
+
+    # Virtualbox VM Specific Configuration
+    ubuntu2204.vm.provider 'virtualbox' do |v, override|
+      override.vm.box = "file://builds/ubuntu2204-virtualbox.box"
       override.vm.synced_folder ".", "/vagrant", disabled: true
     end
   end
