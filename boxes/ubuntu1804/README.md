@@ -2,7 +2,7 @@
 
 
 ```yml
-version: 18.04
+version: 18.04.6
 installer: debian-installer
 providers:
   - hyperv
