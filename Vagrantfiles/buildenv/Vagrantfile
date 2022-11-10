@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # Hyper-V Provider Specific Configuration
+  config.vm.provider "hyperv" do |h|
+    h.vmname = "vagrant-buildenv"
+    h.enable_virtualization_extensions = true
+    h.linked_clone = true
+    h.cpus = 2
+    h.memory = 4096
+  end
+
+  config.vm.define "buildenv" do |buildenv|
+    # VM Shared Configuration
+    buildenv.vm.box = "maroskukan/ubuntu2204"
+    buildenv.vm.hostname = "buildenv"
+
+    # Hyper-V VM Specific Configuration
+    buildenv.vm.provider 'hyperv' do |h, override|
+      override.vm.box = "file://builds/ubuntu2204-hyperv.box"
+      override.vm.network "public_network", bridge: "Default Switch"
+      override.vm.synced_folder '.', '/vagrant', disabled: true
+    end
+  end
+
+  # VM Shared Provisioning
+  config.vm.provision "shell", path: "provision.sh"
+end
