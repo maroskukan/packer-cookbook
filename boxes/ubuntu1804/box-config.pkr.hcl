@@ -208,9 +208,9 @@ build {
       output = "builds/${var.name}-{{.Provider}}.box"
     }
 
-    // post-processor "vagrant-cloud" {
-    //   box_tag = "maroskukan/${var.name}"
-    //   version = "${local.version}"
-    // }
+    post-processor "vagrant-cloud" {
+      box_tag = "maroskukan/${var.name}"
+      version = "${local.version}"
+    }
   }
 }
