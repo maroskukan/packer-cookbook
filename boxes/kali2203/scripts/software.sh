@@ -22,7 +22,7 @@ if [ "$PACKER_BUILDER_TYPE" = "hyperv-iso" ]; then
     apt-get install -y hyperv-daemons
 elif [ "$PACKER_BUILDER_TYPE" = "virtualbox-iso" ]; then
     echo "Install virtualbox guest support tools"
-    apt-get install virtualbox-guest-x11
+    apt-get install -y virtualbox-guest-x11
 else
     echo "Installation of hypervisor guest support tools skipped."
 fi
