@@ -23,6 +23,13 @@ Vagrant.configure("2") do |config|
     w.vmx['numvcpus'] = "2"
   end
 
+  # Virtualbox Provider Specific Configuration
+  config.vm.provider "virtualbox" do |v|
+    v.name = "vagrant-kali2203"
+    v.memory = 2048
+    v.cpus = 2
+  end
+
   config.vm.define "kali2203" do |kali2203|
     # VM Shared Configuration
     kali2203.vm.box = "maroskukan/kali2203"
@@ -38,6 +45,12 @@ Vagrant.configure("2") do |config|
     # VMware Workstation VM Specific Configuration
     kali2203.vm.provider 'vmware_desktop' do |w, override|
       override.vm.box = "file://builds/kali2203-vmware.box"
+      override.vm.synced_folder ".", "/vagrant", disabled: true
+    end
+
+    # Virtualbox VM Specific Configuration
+    kali2203.vm.provider 'virtualbox' do |v, override|
+      override.vm.box = "file://builds/kali2203-virtualbox.box"
       override.vm.synced_folder ".", "/vagrant", disabled: true
     end
   end

@@ -54,7 +54,7 @@ source "hyperv-iso" "vm" {
                             "locale=en_US ", "keymap=us ", "hostname=${var.name} ", "domain='' ",
                             "<enter>"
                           ]
-  boot_wait             = "25s"
+  boot_wait             = "20s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
@@ -83,7 +83,7 @@ source "vmware-iso" "vm" {
                             "locale=en_US ", "keymap=us ", "hostname=${var.name} ", "domain='' ",
                             "<enter>"
                           ]
-  boot_wait             = "5s"
+  boot_wait             = "10s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
@@ -115,8 +115,43 @@ source "vmware-iso" "vm" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
+source "virtualbox-iso" "vm" {
+  boot_command          = [
+                            "<esc><wait>", "install <wait>",
+                            "preseed/url=http://192.168.56.1:{{ .HTTPPort }}/preseed-minimal.cfg ",
+                            "locale=en_US ", "keymap=us ", "hostname=${var.name} ", "domain='' ",
+                            "<enter>"
+                          ]
+  boot_wait        = "10s"
+  communicator     = "ssh"
+  vm_name          = "packer-${var.name}"
+  cpus             = "${var.cpus}"
+  memory           = "${var.memory}"
+  disk_size        = "${var.disk_size}"
+  iso_urls         = "${var.iso_urls}"
+  iso_checksum     = "${var.iso_checksum}"
+  headless         = false
+  http_directory   = "http"
+  ssh_username     = "vagrant"
+  ssh_password     = "vagrant"
+  ssh_port         = 22
+  ssh_timeout      = "3600s"
+  guest_os_type    = "Ubuntu_64"
+  hard_drive_interface = "sata"
+  vboxmanage      = [
+                      [
+                        "modifyvm",
+                        "{{.Name}}",
+                        "--vram",
+                        "64"
+                      ]
+                    ]
+  output_directory = "builds/${var.name}-virtualbox"
+  shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
+}
+
 build {
-  sources = ["source.hyperv-iso.vm", "source.vmware-iso.vm"]
+  sources = ["source.hyperv-iso.vm", "source.vmware-iso.vm", "source.virtualbox-iso.vm"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
@@ -129,9 +164,9 @@ build {
       output = "builds/${var.name}-{{.Provider}}.box"
     }
 
-    // post-processor "vagrant-cloud" {
-    //   box_tag = "maroskukan/${var.name}"
-    //   version = "${local.version}"
-    // }
+    post-processor "vagrant-cloud" {
+      box_tag = "maroskukan/${var.name}"
+      version = "${local.version}"
+    }
   }
 }
