@@ -8,6 +8,7 @@ installer: debian-installer
 providers:
   - hyperv
   - vmware_desktop
+  - virtualbox
 ```
 
 ## Usage
