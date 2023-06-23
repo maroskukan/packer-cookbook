@@ -579,6 +579,10 @@ PACKER_BUILD_NAME - set to the name of the build that Packer is running
 PACKER_BUILD_TYPE - set the type of build that was used to create the machine
 PACKER_HTTP_ADDR - set to the address of the http server for file transfer (if used)
 
+### Contextual variables
+
+It is worth noting some [contextual variables](https://developer.hashicorp.com/packer/docs/templates/hcl_templates/contextual-variables) that can be used during the build.
+
 
 ## Provisioners
 
