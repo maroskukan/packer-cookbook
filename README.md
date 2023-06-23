@@ -1089,6 +1089,42 @@ clear-text-pw: test
 $6$BfeENzHTV2I.T6Ec$EQXrqQ/YiZM4lBOlBTZmcJtkdqjOo2Ja.3Y3poxb2pC9APzSNoFvrE4Otqhf9vfcCUKO8Ge7fmFsybxxhu3nO.
 ```
 
+### Answer file and kernel args validation
+
+Before running automated installation using Packer, you can quickly validate that your debian-preseed, cloud-init or kickstart configuration is valid using a simple http server provided by python.
+
+```bash
+# Navigate to folder where the answer file is located
+python3 -m http.server -p 8000 -d .
+```
+
+Next, update kernel parameters in the installer, for cloud-init it would be as follows:
+
+```bash
+linux /casper/vmlinuz autoinstall ds='nocloud-net;s=http://10.0.2.2:8000/' ---
+initrd /casper/initrd
+boot
+```
+
+In case the answer file was not downloaded (you don't see any get request for `user-data`, `meta-data` and `vendor-data` in python server log) you can invoke a shell console using `Alt + F2`. Here you can verify the kernel arguments:
+
+```bash
+grep 'Command line' /var/log/dmesg
+```
+
+Verify logs from cloud-init.
+
+```bash
+less /var/log/cloud-init.log
+```
+
+You can verify if are able to download the answer file manually
+
+```bash
+curl -o user-data http://192.168.56.1:8000/user-data
+```
+
+Some common issues happen from mistyping the command line args, host firewall or access to internet, and answer file misconfiguration, including line ending.
 
 ### Unattended installation
 
