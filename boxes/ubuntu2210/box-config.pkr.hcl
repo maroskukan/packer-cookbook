@@ -1,3 +1,17 @@
+packer {
+  required_version = ">= 1.7.0"
+  required_plugins {
+    hyperv = {
+      version = ">= 1.1.1"
+      source  = "github.com/hashicorp/hyperv"
+    }
+    vmware = {
+      version = ">= 1.0.8"
+      source  = "github.com/hashicorp/vmware"
+    }
+  }
+}
+
 locals {
   version = formatdate("YYYY.MM.DD", timestamp())
 }
@@ -47,7 +61,7 @@ variable "iso_checksum" {
   default = "874452797430a94ca240c95d8503035aa145bd03ef7d84f9b23b78f3c5099aed"
 }
 
-source "hyperv-iso" "vm" {
+source "hyperv-iso" "efi" {
   boot_command          = [
                            "c",
                            "linux /casper/vmlinuz autoinstall quiet net.ifnames=0 biosdevname=0 ",
@@ -69,12 +83,13 @@ source "hyperv-iso" "vm" {
   ssh_password          = "vagrant"
   ssh_port              = 22
   ssh_timeout           = "3600s"
-  enable_dynamic_memory = true
-  enable_secure_boot    = false
+  enable_dynamic_memory = false
+  enable_secure_boot    = true
   guest_additions_mode  = "disable"
   switch_name           = "Default switch"
-  generation            = "1"
-  output_directory      = "builds/${var.name}-hyperv"
+  generation            = "2"
+  secure_boot_template  = "MicrosoftUEFICertificateAuthority"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
@@ -150,7 +165,7 @@ source "virtualbox-iso" "efi" {
 }
 
 build {
-  sources = ["source.hyperv-iso.vm", "sources.vmware-iso.vm", "sources.virtualbox-iso.efi"]
+  sources = ["source.hyperv-iso.efi", "sources.vmware-iso.vm", "sources.virtualbox-iso.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
