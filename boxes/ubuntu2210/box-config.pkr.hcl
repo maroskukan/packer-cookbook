@@ -118,11 +118,11 @@ source "vmware-iso" "vm" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
-source "virtualbox-iso" "vm" {
+source "virtualbox-iso" "efi" {
   boot_command          = [
                            "c",
-                           "linux /casper/vmlinuz autoinstall quiet net.ifnames=0 biosdevname=0 ",
-                           "ds='nocloud-net;s=http://192.168.56.1:{{ .HTTPPort }}/' --- <enter><wait>",
+                           "linux /casper/vmlinuz autoinstall net.ifnames=0 biosdevname=0 ",
+                           "ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' --- <enter><wait>",
                            "initrd /casper/initrd<enter><wait>",
                            "boot<enter>"
                           ]
@@ -140,13 +140,17 @@ source "virtualbox-iso" "vm" {
   ssh_password          = "vagrant"
   ssh_port              = 22
   ssh_timeout           = "3600s"
+  firmware              = "efi"
+  vboxmanage            = [
+                            ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"],
+                          ]
   guest_os_type         = "Ubuntu_64"
-  output_directory      = "builds/${var.name}-virtualbox"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
 build {
-  sources = ["source.hyperv-iso.vm", "sources.vmware-iso.vm", "sources.virtualbox-iso.vm"]
+  sources = ["source.hyperv-iso.vm", "sources.vmware-iso.vm", "sources.virtualbox-iso.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
