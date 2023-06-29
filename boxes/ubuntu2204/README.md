@@ -1,12 +1,15 @@
 # Ubuntu 22.04 LTS (Jammy Jellyfish) Vagrant Box
 
+## Description
 
 ```yml
 version: 22.04
+firmware: efi
 installer: subiquity
+providers:
+  - hyperv
+  - virtualbox
 ```
-
-
 
 ## Usage
 
@@ -15,6 +18,9 @@ installer: subiquity
 ```powershell
 # Setup Access token
 $ENV:VAGRANT_CLOUD_TOKEN = "your-vagrant-cloud-access-token"
+
+# Install Required Plugins
+packer init .\box-config.pkr.hcl
 
 # Validate
 packer validate .\box-config.pkr.hcl
@@ -28,6 +34,9 @@ packer build .\box-config.pkr.hcl
 ```bash
 # Setup Access token
 export VAGRANT_CLOUD_TOKEN = "your-vagrant-cloud-access-token"
+
+# Install Required Plugins
+packer init ./box-config.pkr.hcl
 
 # Validate
 packer validate ./box-config.pkr.hcl
