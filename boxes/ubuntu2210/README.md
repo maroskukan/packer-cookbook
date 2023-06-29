@@ -3,6 +3,7 @@
 
 ```yml
 version: 22.10
+firmware: efi
 installer: subiquity
 providers:
   - hyperv

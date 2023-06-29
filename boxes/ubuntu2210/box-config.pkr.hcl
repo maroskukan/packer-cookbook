@@ -93,10 +93,10 @@ source "hyperv-iso" "efi" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
-source "vmware-iso" "vm" {
+source "vmware-iso" "efi" {
   boot_command          = [
                            "c",
-                           "linux /casper/vmlinuz autoinstall quiet net.ifnames=0 biosdevname=0 ",
+                           "linux /casper/vmlinuz autoinstall net.ifnames=0 biosdevname=0 ",
                            "ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' --- <enter><wait>",
                            "initrd /casper/initrd<enter><wait>",
                            "boot<enter>"
@@ -117,8 +117,11 @@ source "vmware-iso" "vm" {
   ssh_timeout           = "3600s"
   vnc_disable_password  = true
   vnc_bind_address      = "127.0.0.1"
+  vmx_data              = {
+                            "firmware" = "efi"
+                          }
   vmx_data_post         = {
-                          "virtualHW.version": "12",
+                          "virtualHW.version": "18",
                           "cleanShutdown": "true",
                           "softPowerOff": "true",
                           "ethernet0.virtualDev": "e1000",
@@ -127,9 +130,9 @@ source "vmware-iso" "vm" {
                           }
   guest_os_type         = "ubuntu-64"
   vmx_remove_ethernet_interfaces = true
-  version               = 12
+  version               = 18
   tools_upload_flavor   = "linux"
-  output_directory      = "builds/${var.name}-hyperv"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
@@ -165,7 +168,7 @@ source "virtualbox-iso" "efi" {
 }
 
 build {
-  sources = ["source.hyperv-iso.efi", "sources.vmware-iso.vm", "sources.virtualbox-iso.efi"]
+  sources = ["source.hyperv-iso.efi", "sources.vmware-iso.efi", "sources.virtualbox-iso.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
