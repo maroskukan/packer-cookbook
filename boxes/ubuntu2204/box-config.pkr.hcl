@@ -64,7 +64,7 @@ variable "iso_checksum" {
 source "hyperv-iso" "efi" {
   boot_command          = [
                            "c",
-                           "linux /casper/vmlinuz autoinstall quiet net.ifnames=0 biosdevname=0 ",
+                           "linux /casper/vmlinuz autoinstall net.ifnames=0 biosdevname=0 ",
                            "ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' --- <enter><wait>",
                            "initrd /casper/initrd<enter><wait>",
                            "boot<enter>"

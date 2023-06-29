@@ -4,7 +4,6 @@ autoinstall:
   locale: en_US.UTF-8
   keyboard:
     layout: us
-    variant: us
 
   apt:
       geoip: false
@@ -16,7 +15,7 @@ autoinstall:
             uri: https://mirrors.edge.kernel.org/ubuntu/
 
   early-commands:
-    # SSH Server needs to be disabled for vbox build
+    # Prevent Packer to connect to Ubiquity's installation environment
     - systemctl stop ssh
 
   ssh:
@@ -24,22 +23,23 @@ autoinstall:
     allow-pw: true
 
   identity:
-    hostname: ubuntu2004
+    hostname: ubuntu2204
     password: "$6$8P/WYeedh2vMmmn4$5LZtQr7MvzvtE2AGkQIlXJjZKyOUOyHwOcu5WSYBO7ls3.rgnGfl.236U0uAGbFY2ZCJt55tFBeJ1P1j.WQp/1" #vagrant
     username: vagrant
 
   storage:
     layout:
-      name: lvm
+      name: direct
     swap:
       size: 0
 
   packages:
-    # The following packages are required for hyperv build
-    - linux-image-virtual
-    - linux-tools-virtual
+    # Required for Hyper-V
     - linux-cloud-tools-virtual
 
   late-commands:
     - echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/99_vagrant
     - chmod 440 /target/etc/sudoers.d/99_vagrant
+    - sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"$/GRUB_CMDLINE_LINUX_DEFAULT=="\1 net.ifnames=0 biosdevname=0"/g' /target/etc/default/grub
+    - sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=" net.ifnames/GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames/g' /target/etc/default/grub
+    - curtin in-target --target=/target -- update-grub
