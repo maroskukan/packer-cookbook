@@ -93,6 +93,49 @@ source "hyperv-iso" "efi" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
+source "vmware-iso" "efi" {
+  boot_command          = [
+                           "c",
+                           "linux /casper/vmlinuz autoinstall net.ifnames=0 biosdevname=0 ",
+                           "ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' --- <enter><wait>",
+                           "initrd /casper/initrd<enter><wait>",
+                           "boot<enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  vnc_disable_password  = true
+  vnc_bind_address      = "127.0.0.1"
+  vmx_data              = {
+                            "firmware" = "efi"
+                          }
+  vmx_data_post         = {
+                          "virtualHW.version": "18",
+                          "cleanShutdown": "true",
+                          "softPowerOff": "true",
+                          "ethernet0.virtualDev": "e1000",
+                          "ethernet0.startConnected": "true",
+                          "ethernet0.wakeonpcktrcv": "false"
+                          }
+  guest_os_type         = "ubuntu-64"
+  vmx_remove_ethernet_interfaces = true
+  version               = 18
+  tools_upload_flavor   = "linux"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
+}
+
 source "virtualbox-iso" "vm" {
   boot_command = [
     "c",
@@ -121,7 +164,7 @@ source "virtualbox-iso" "vm" {
 }
 
 build {
-  sources = ["source.hyperv-iso.efi", "source.virtualbox-iso.vm"]
+  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.vm"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
