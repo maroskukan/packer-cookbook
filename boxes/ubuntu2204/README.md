@@ -8,6 +8,7 @@ firmware: efi
 installer: subiquity
 providers:
   - hyperv
+  - vmware_desktop
   - virtualbox
 ```
 
