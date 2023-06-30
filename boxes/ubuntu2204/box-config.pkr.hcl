@@ -136,35 +136,39 @@ source "vmware-iso" "efi" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
-source "virtualbox-iso" "vm" {
-  boot_command = [
-    "c",
-    "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' ",
-    "<enter><wait>",
-    "initrd /casper/initrd<enter><wait>",
-    "boot<enter>"
-  ]
-  boot_wait        = "5s"
-  communicator     = "ssh"
-  vm_name          = "packer-${var.name}"
-  cpus             = "${var.cpus}"
-  memory           = "${var.memory}"
-  disk_size        = "${var.disk_size}"
-  iso_urls         = "${var.iso_urls}"
-  iso_checksum     = "${var.iso_checksum}"
-  headless         = true
-  http_directory   = "http"
-  ssh_username     = "vagrant"
-  ssh_password     = "vagrant"
-  ssh_port         = 22
-  ssh_timeout      = "3600s"
-  guest_os_type    = "Ubuntu_64"
-  output_directory = "builds/${var.name}-virtualbox"
-  shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
+source "virtualbox-iso" "efi" {
+  boot_command          = [
+                           "c",
+                           "linux /casper/vmlinuz autoinstall net.ifnames=0 biosdevname=0 ",
+                           "ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' --- <enter><wait>",
+                           "initrd /casper/initrd<enter><wait>",
+                           "boot<enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  firmware              = "efi"
+  vboxmanage            = [
+                            ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"],
+                          ]
+  guest_os_type         = "Ubuntu_64"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
 build {
-  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.vm"]
+  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
