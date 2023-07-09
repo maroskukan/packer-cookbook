@@ -1,0 +1,60 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # Provider Shared Configuration
+  config.ssh.insert_key = false
+
+  # Hyper-V Provider Specific Configuration
+  config.vm.provider "hyperv" do |h|
+    h.vmname = "vagrant-ubuntu1804"
+    h.enable_virtualization_extensions = true
+    h.linked_clone = true
+    h.cpus = 2
+    h.memory = 2048
+    h.maxmemory = 2048
+  end
+
+  # VMware Workstation Provider Specific Configuration
+  config.vm.provider "vmware_desktop" do |w|
+    w.vmx['displayname'] = "vagrant-ubuntu1804"
+    w.vmx['memsize'] = "2048"
+    w.vmx['numvcpus'] = "2"
+  end
+
+  # Virtualbox Provider Specific Configuration
+  config.vm.provider "virtualbox" do |v|
+    v.name = "vagrant-ubuntu1804"
+    v.memory = 2048
+    v.cpus = 2
+  end
+
+  config.vm.define "ubuntu1804" do |ubuntu1804|
+    # VM Shared Configuration
+    ubuntu1804.vm.box = "maroskukan/ubuntu1804"
+    ubuntu1804.vm.hostname = "ubuntu1804"
+
+    # Hyper-V VM Specific Configuration
+    ubuntu1804.vm.provider 'hyperv' do |h, override|
+      override.vm.box = "file://builds/ubuntu1804-hyperv.box"
+      override.vm.network "public_network", bridge: "Default Switch"
+      override.vm.synced_folder '.', '/vagrant', disabled: true
+    end
+
+    # VMware Workstation VM Specific Configuration
+    ubuntu1804.vm.provider 'vmware_desktop' do |w, override|
+      override.vm.box = "file://builds/ubuntu1804-vmware.box"
+      override.vm.synced_folder ".", "/vagrant", disabled: true
+    end
+
+    # Virtualbox VM Specific Configuration
+    ubuntu1804.vm.provider 'virtualbox' do |v, override|
+      override.vm.box = "file://builds/ubuntu1804-virtualbox.box"
+      override.vm.synced_folder ".", "/vagrant", disabled: true
+    end
+  end
+
+  # VM Shared Provisioning
+  config.vm.provision "shell", inline: "cat /etc/os-release"
+end
