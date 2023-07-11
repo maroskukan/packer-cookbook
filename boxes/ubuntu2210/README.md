@@ -1,4 +1,4 @@
-# Ubuntu 22.10 LTS (Kinetic Kudu) Vagrant Box
+# Ubuntu 22.10 (Kinetic Kudu) Vagrant Box
 
 
 ```yml
