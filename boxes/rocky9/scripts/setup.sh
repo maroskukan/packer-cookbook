@@ -1,31 +1,15 @@
-#!/bin/sh -eux
-export DEBIAN_FRONTEND=noninteractive
-
-
-# Disable release-upgrades
-sed -i.bak 's/^Prompt=.*$/Prompt=never/' /etc/update-manager/release-upgrades;
-
-# Disable systemd apt timers/services
-systemctl stop apt-daily.timer;
-systemctl stop apt-daily-upgrade.timer;
-systemctl disable apt-daily.timer;
-systemctl disable apt-daily-upgrade.timer;
-systemctl mask apt-daily.service;
-systemctl mask apt-daily-upgrade.service;
-systemctl daemon-reload;
-
-# Disable periodic activities of apt to be safe
-cat <<EOF >/etc/apt/apt.conf.d/10periodic;
-APT::Periodic::Enable "0";
-APT::Periodic::Update-Package-Lists "0";
-APT::Periodic::Download-Upgradeable-Packages "0";
-APT::Periodic::AutocleanInterval "0";
-APT::Periodic::Unattended-Upgrade "0";
-EOF
-
-# Clean and nuke the package from orbit
-rm -rf /var/log/unattended-upgrades;
-apt-get -y purge unattended-upgrades;
+#!/bin/bash -eux
 
 # Upgrade all installed packages
-apt-get -y upgrade;
+dnf -y upgrade
+
+# Setup key-based authentication
+pubkey_url="https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub";
+mkdir -m 700 -p $HOME_DIR/.ssh;
+if command -v curl >/dev/null 2>&1; then
+    curl --insecure --location "$pubkey_url" > $HOME_DIR/.ssh/authorized_keys;
+else
+    echo "Cannot download vagrant public key";
+    exit 1;
+fi
+chown -R vagrant:vagrant $HOME_DIR/.ssh;
