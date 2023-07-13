@@ -66,7 +66,7 @@ source "hyperv-iso" "efi" {
                            "c",
                            "linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Rocky-9-2-x86_64-dvd ",
                            "net.ifnames=0 biosdevname=0 ",
-                           "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg' --- <enter><wait>",
+                           "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg --- <enter><wait>",
                            "initrdefi /images/pxeboot/initrd.img<enter><wait>",
                            "boot<enter>"
                           ]
@@ -101,7 +101,7 @@ build {
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    scripts           = ["scripts/setup.sh", "scripts/vagrant.sh", "scripts/cleanup.sh"]
+    scripts           = ["scripts/setup.sh", "scripts/cleanup.sh"]
     expect_disconnect = true
   }
   post-processors {
