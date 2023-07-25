@@ -66,7 +66,7 @@ source "hyperv-iso" "efi" {
                            "c",
                            "linux /install.amd/vmlinuz ",
                            "auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
-                           "netcfg/get_hostname=${var.name} netcfg/get_domain='' ",
+                           "priority=critical ",
                            "--- net.ifnames=0 biosdevname=0<enter>",
                            "initrd /install.amd/initrd.gz<enter><wait>",
                            "boot<enter>"
