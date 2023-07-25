@@ -61,29 +61,21 @@ variable "iso_checksum" {
   default = "f5cbb8104348f0097a8e513b10173a07dbc6684595e331cb06f93f385d0aecf6"
 }
 
-source "hyperv-iso" "vm" {
+source "hyperv-iso" "efi" {
   boot_command          = [
-                            "<esc><wait>","<esc><wait>","<enter><wait>",
-                            "/install/vmlinuz<wait> ",
-                            "auto ",
-                            "console-setup/ask_detect=false ",
-                            "console-setup/layoutcode=us ",
-                            "console-setup/modelcode=pc105 ",
-                            "debconf/frontend=noninteractive ",
-                            "debian-installer=en_US ",
-                            "fb=false ",
-                            "initrd=/install/initrd.gz ",
-                            "kbd-chooser/method=us ",
-                            "keyboard-configuration/layout=USA ",
-                            "keyboard-configuration/variant=USA ",
-                            "locale=en_US ",
-                            "noapic ",
-                            "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
-                            "ipv6.disable_ipv6=1 net.ifnames=0 biosdevname=0 ",
-                            "netcfg/get_domain='' ", "netcfg/get_hostname=${var.name} ",
-                            "--- <enter>"
+                           "c",
+                           "linux /install/vmlinuz ",
+                           "auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",                           
+                           "net.ifnames=0 biosdevname=0 ",
+                           "debian-installer=en_US locale=en_US ",
+                           "console-setup/ask_detect=false console-setup/layoutcode=us ",
+                           "keyboard-configuration/layout=USA keyboard-configuration/variant=USA ",
+                           "netcfg/get_domain='' ", "netcfg/get_hostname=${var.name} ",
+                           "ipv6.disable_ipv6=1 net.ifnames=0 biosdevname=0 <enter><wait>",
+                           "initrd /install/initrd.gz<enter><wait>",
+                           "boot<enter>"
                           ]
-  boot_wait             = "10s"
+  boot_wait             = "5s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
@@ -97,11 +89,14 @@ source "hyperv-iso" "vm" {
   ssh_password          = "vagrant"
   ssh_port              = 22
   ssh_timeout           = "3600s"
-  enable_dynamic_memory = true
+  enable_dynamic_memory = false
   enable_secure_boot    = false
+  guest_additions_mode  = "disable"
   switch_name           = "Default switch"
-  generation            = "1"
-  output_directory      = "builds/${var.name}-hyperv"
+  generation            = "2"
+  secure_boot_template  = "MicrosoftUEFICertificateAuthority"
+  configuration_version = "10.0"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
@@ -246,7 +241,7 @@ source "virtualbox-iso" "efi" {
 }
 
 build {
-  sources = ["source.hyperv-iso.vm", "source.vmware-iso.vm", "virtualbox-iso.efi"]
+  sources = ["hyperv-iso.efi", "source.vmware-iso.vm", "virtualbox-iso.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
