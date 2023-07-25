@@ -89,6 +89,7 @@ source "hyperv-iso" "efi" {
   switch_name           = "Default switch"
   generation            = "2"
   secure_boot_template  = "MicrosoftUEFICertificateAuthority"
+  configuration_version = "10.0"  
   output_directory      = "builds/${var.name}-${source.name}-${source.type}"
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
