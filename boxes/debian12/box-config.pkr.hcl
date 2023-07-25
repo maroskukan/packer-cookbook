@@ -141,8 +141,41 @@ source "vmware-iso" "efi" {
   shutdown_command      = "echo 'vagrant' | sudo -S /usr/sbin/shutdown -P now"
 }
 
+source "virtualbox-iso" "efi" {
+  boot_command          = [
+                           "c",
+                           "linux /install.amd/vmlinuz ",
+                           "auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+                           "priority=critical ",
+                           "--- net.ifnames=0 biosdevname=0<enter>",
+                           "initrd /install.amd/initrd.gz<enter><wait>",
+                           "boot<enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = ["iso/debian-11.7.0-amd64-netinst.iso","https://cdimage.debian.org/cdimage/archive/11.7.0/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"]
+  iso_checksum          = "eb3f96fd607e4b67e80f4fc15670feb7d9db5be50f4ca8d0bf07008cb025766b"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  firmware              = "efi"
+  vboxmanage            = [
+                            ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"],
+                          ]
+  guest_os_type         = "Debian_64"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
+  shutdown_command      = "echo 'vagrant' | sudo -S /usr/sbin/shutdown -P now"
+}
+
 build {
-  sources = ["hyperv-iso.efi", "vmware-iso.efi"]
+  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
