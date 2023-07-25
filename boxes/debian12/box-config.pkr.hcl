@@ -1,3 +1,17 @@
+packer {
+  required_version = ">= 1.7.0"
+  required_plugins {
+    hyperv = {
+      version = ">= 1.1.1"
+      source  = "github.com/hashicorp/hyperv"
+    }
+    vmware = {
+      version = ">= 1.0.8"
+      source  = "github.com/hashicorp/vmware"
+    }
+  }
+}
+
 locals {
   version = formatdate("YYYY.MM.DD", timestamp())
 }
@@ -39,72 +53,56 @@ variable "no_proxy" {
 
 variable "iso_urls" {
   type = list(string)
-  default = ["iso/debian-12.0.0-amd64-netinst.iso", "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.0.0-amd64-netinst.iso"]
+  default = ["iso/debian-12.1.0-amd64-netinst.iso", "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.1.0-amd64-netinst.iso"]
 }
 
 variable "iso_checksum" {
   type = string
-  default = "b462643a7a1b51222cd4a569dad6051f897e815d10aa7e42b68adc8d340932d861744b5ea14794daa5cc0ccfa48c51d248eda63f150f8845e8055d0a5d7e58e6"
+  default = "9f181ae12b25840a508786b1756c6352a0e58484998669288c4eec2ab16b8559"
 }
 
-
-source "virtualbox-iso" "efi" {
-  boot_command     = [
-                      "<esc><wait>","<esc><wait>","<enter><wait>",
-                      "/install/vmlinuz<wait> ",
-                      "auto ",
-                      "console-setup/ask_detect=false ",
-                      "console-setup/layoutcode=us ",
-                      "console-setup/modelcode=pc105 ",
-                      "debconf/frontend=noninteractive ",
-                      "debian-installer=en_US ",
-                      "fb=false ",
-                      "initrd=/install/initrd.gz ",
-                      "kbd-chooser/method=us ",
-                      "keyboard-configuration/layout=USA ",
-                      "keyboard-configuration/variant=USA ",
-                      "locale=en_US ",
-                      "noapic ",
-                      "preseed/url=http://192.168.56.1:{{ .HTTPPort }}/preseed.cfg ",
-                      "ipv6.disable_ipv6=1 net.ifnames=0 biosdevname=0 ",
-                      "netcfg/get_domain='' ", "netcfg/get_hostname=${var.name} ",
-                      "--- <enter>"
-                     ]
-  boot_wait        = "10s"
-  communicator     = "ssh"
-  vm_name          = "packer-${var.name}"
-  cpus             = "${var.cpus}"
-  memory           = "${var.memory}"
-  disk_size        = "${var.disk_size}"
-  iso_urls         = "${var.iso_urls}"
-  iso_checksum     = "${var.iso_checksum}"
-  headless         = false
-  http_directory   = "http"
-  ssh_username     = "vagrant"
-  ssh_password     = "vagrant"
-  ssh_port         = 22
-  ssh_timeout      = "3600s"
-  guest_os_type    = "Ubuntu_64"
-  hard_drive_interface = "sata"
-  vboxmanage      = [
-                      [
-                        "modifyvm",
-                        "{{.Name}}",
-                        "--vram",
-                        "64"
-                      ]
-                    ]
-  output_directory = "builds/${var.name}-virtualbox"
-  shutdown_command = "echo 'vagrant' | sudo -S shutdown -P now"
+source "hyperv-iso" "efi" {
+  boot_command          = [
+                           "c",
+                           "linux /install.amd/vmlinuz ",
+                           "auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+                           "netcfg/get_hostname=${var.name} netcfg/get_domain='' ",
+                           "--- net.ifnames=0 biosdevname=0<enter>",
+                           "initrd /install.amd/initrd.gz<enter><wait>",
+                           "boot<enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  enable_dynamic_memory = false
+  enable_secure_boot    = true
+  guest_additions_mode  = "disable"
+  switch_name           = "Default switch"
+  generation            = "2"
+  secure_boot_template  = "MicrosoftUEFICertificateAuthority"
+  configuration_version = "10.0"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
 build {
-  sources = ["virtualbox-iso.efi"]
+  sources = ["hyperv-iso.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    scripts           = ["scripts/update.sh", "scripts/sshd.sh", "scripts/networking.sh", "scripts/sudoers.sh", "scripts/vagrant.sh", "scripts/vmtools.sh", "scripts/cleanup.sh", "scripts/minimize.sh", "scripts/swapoff.sh"]
+    scripts           = ["scripts/setup.sh", "scripts/vagrant.sh", "scripts/cleanup.sh"]
     expect_disconnect = true
   }
   post-processors {
