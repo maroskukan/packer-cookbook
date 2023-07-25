@@ -93,7 +93,7 @@ source "hyperv-iso" "efi" {
   secure_boot_template  = "MicrosoftUEFICertificateAuthority"
   configuration_version = "10.0"
   output_directory      = "builds/${var.name}-${source.name}-${source.type}"
-  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
+  shutdown_command      = "echo 'vagrant' | sudo -S /usr/sbin/shutdown -P now"
 }
 
 build {
