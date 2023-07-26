@@ -8,6 +8,9 @@ if [ "$PACKER_BUILDER_TYPE" = "virtualbox-iso" ]; then
     fi
 fi
 
+# Remove outdated packages
+apt-get -y --purge autoremove
+
 # Remove docs
 rm -rf /usr/share/doc/*
 
