@@ -151,14 +151,14 @@ source "virtualbox-iso" "efi" {
                            "initrd /install.amd/initrd.gz<enter><wait>",
                            "boot<enter>"
                           ]
-  boot_wait             = "5s"
+  boot_wait             = "10s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
   memory                = "${var.memory}"
   disk_size             = "${var.disk_size}"
-  iso_urls              = ["iso/debian-11.7.0-amd64-netinst.iso","https://cdimage.debian.org/cdimage/archive/11.7.0/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"]
-  iso_checksum          = "eb3f96fd607e4b67e80f4fc15670feb7d9db5be50f4ca8d0bf07008cb025766b"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
   headless              = false
   http_directory        = "http"
   ssh_username          = "vagrant"
