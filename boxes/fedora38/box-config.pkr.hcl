@@ -138,8 +138,43 @@ source "vmware-iso" "efi" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
+source "virtualbox-iso" "efi" {
+  boot_command          = [
+                           "c",
+                           "linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-38 ",
+                           "ipv6.disable=1 net.ifnames=0 biosdevname=0 ",
+                           "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg --- <enter><wait>",
+                           "initrdefi /images/pxeboot/initrd.img<enter><wait>",
+                           "boot<enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  firmware              = "efi"
+  vboxmanage            = [
+                            ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"],
+                            ["modifyvm", "{{.Name}}", "--vram", "64"]
+                          ]
+  guest_os_type         = "Fedora_64"
+  guest_additions_mode  = "disable"
+  hard_drive_interface  = "sata"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
+}
+
 build {
-  sources = ["hyperv-iso.efi", "vmware-iso.efi"]
+  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi"]
 
   provisioner "shell" {
     execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
