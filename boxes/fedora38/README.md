@@ -1,4 +1,4 @@
-# Fedora Server 38 (Lunar Lobster) Vagrant Box
+# Fedora Server 38 Vagrant Box
 
 
 ```yml
