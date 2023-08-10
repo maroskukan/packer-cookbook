@@ -7,6 +7,7 @@ firmware: efi
 installer: anaconda
 providers:
   - hyperv
+  - vmware_desktop
 ```
 
 
