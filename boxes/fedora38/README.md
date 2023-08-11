@@ -8,6 +8,7 @@ installer: anaconda
 providers:
   - hyperv
   - vmware_desktop
+  - virtualbox
 ```
 
 
