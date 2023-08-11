@@ -24,7 +24,21 @@ find /var/log -type f -exec truncate --size=0 {} \;
 printf "Purge the setup files and temporary data.\n"
 rm -rf /var/tmp/* /tmp/* /var/cache/dnf/* /tmp/ks-script*
 
+# Whiteout root
+count=$(df --sync -kP / | tail -n1  | awk -F ' ' '{print $4}')
+count=$(($count-1))
+dd if=/dev/zero of=/tmp/whitespace bs=1M count=$count || echo "dd exit code $? is suppressed";
+rm /tmp/whitespace
+
+# Whiteout /boot
+count=$(df --sync -kP /boot | tail -n1 | awk -F ' ' '{print $4}')
+count=$(($count-1))
+dd if=/dev/zero of=/boot/whitespace bs=1M count=$count || echo "dd exit code $? is suppressed";
+rm /boot/whitespace
+
 # Clear the command history.
 export HISTSIZE=0
+
+sync
 
 exit 0
