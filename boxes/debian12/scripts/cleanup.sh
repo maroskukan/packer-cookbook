@@ -4,6 +4,8 @@ NAME_SH=setup.sh
 
 echo "==> ${NAME_SH}: Cleanup stage start.."
 
+export DEBIAN_FRONTEND=noninteractive
+
 # Remove any old kernels and modules
 echo "==> ${NAME_SH}: Removing any old kernels and modules.."
 if [[ `dpkg -l | grep -c 'linux-image-[0-9]'` != 1 ]]; then
@@ -45,5 +47,5 @@ echo "==> ${NAME_SH}: Cleaning up the history.."
 export HISTSIZE=0
 
 sync
-
+sleep 300
 echo "==> ${NAME_SH}: Cleanup stage end.."
