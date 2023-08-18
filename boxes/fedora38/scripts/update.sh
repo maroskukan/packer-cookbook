@@ -1,16 +1,22 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 
-printf "Update stage.\n"
+NAME_SH=update.sh
 
-# Upgrade packages
+echo "==> ${NAME_SH}: Update stage start.."
+
+echo "==> ${NAME_SH}: Updating list of packages and upgrading all packages.."
+dnf update
 dnf upgrade -y
 
 # Boot to new kernel if applicable
 if [[ `rpm -q kernel | wc -l` != 1 ]]; then
-  printf "Multiple kernels available. Will reboot.\n"
+  echo "==> ${NAME_SH}: Multiple kernels available.."
+  echo "==> ${NAME_SH}: Rebooting to ensure latest is used.."
+  echo "==> ${NAME_SH}: Update stage end.."
   ( shutdown --reboot --no-wall +1 ) &
   exit 0
 else
- printf "One kernel found. Reboot skipped.\n"
+ echo "==> ${NAME_SH}: Single kernel found, no reboot required.."
+ echo "==> ${NAME_SH}: Update stage end.."
  exit 0
 fi

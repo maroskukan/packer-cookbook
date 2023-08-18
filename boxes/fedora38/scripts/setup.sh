@@ -1,21 +1,29 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 
-printf "Setup stage.\n"
+NAME_SH=setup.sh
 
+echo "==> ${NAME_SH}: Setup stage start.."
+
+# Hypervisor Specific Packages
 HYPERVISOR=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
 
 
 if [ "$HYPERVISOR" = "Microsoft Hyper-V" ]; then
-  printf "Microsoft Hyper-V Detected.\n"
+  echo "==> ${NAME_SH}: Microsoft Hyper-V Detected.."
+  echo "==> ${NAME_SH}: Installing rsync.."
+  dnf install -y rsync
 elif [ "$HYPERVISOR" = "VMware" ]; then
-  printf "VMware Workstation Detected.\n"
+  echo "==> ${NAME_SH}: VMware Workstation Detected.."
+  echo "==> ${NAME_SH}: Installing and enabling Open VM Tools.."
   dnf install -y open-vm-tools
   systemctl enable --now vmtoolsd
 elif [ "$HYPERVISOR" = "KVM" ]; then
   if [[ `cat /sys/devices/virtual/dmi/id/board_name` = "VirtualBox" ]]; then
-    printf "Oracle VirtualBox Detected.\n"
+    echo "==> Oracle VirtualBox Detected.."
+    echo "==> ${NAME_SH}: Installing VirtualBox Guest Additions.."
     dnf install -y virtualbox-guest-additions
   fi
 else
-  printf "Unknown Hypervisor.\n"
+  echo "${NAME_SH}: Unknown Hypervisor.."
 fi
+echo "==> Setup stage end.."
