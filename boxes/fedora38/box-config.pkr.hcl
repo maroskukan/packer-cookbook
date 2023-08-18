@@ -9,6 +9,10 @@ packer {
       version = ">= 1.0.8"
       source  = "github.com/hashicorp/vmware"
     }
+    virtualbox = {
+      version = ">= 1.0.5"
+      source  = "github.com/hashicorp/virtualbox"
+    }
   }
 }
 
@@ -177,14 +181,14 @@ build {
   sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi"]
 
   provisioner "shell" {
-    execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
+    execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh '{{ .Path }}'"
     scripts           = ["scripts/update.sh"]
     expect_disconnect = true
   }
   provisioner "shell" {
     pause_before      = "120s"
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-    execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
+    execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh '{{ .Path }}'"
     scripts           = ["scripts/setup.sh", "scripts/vagrant.sh", "scripts/cleanup.sh"]
     expect_disconnect = true
   }
