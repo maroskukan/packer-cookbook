@@ -1,6 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-printf "Cleanup stage.\n"
+set -e
+if [ -n "$BUILD_DEBUG" ] && set -x
+
+NAME_SH=cleanup.sh
+
+echo "==> ${NAME_SH}: Cleanup stage start.."
 
 # Remove any old kernels and modules
 if [[ `rpm -q kernel | wc -l` != 1 ]]; then
