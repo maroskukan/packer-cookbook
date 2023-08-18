@@ -24,6 +24,6 @@ elif [ "$HYPERVISOR" = "KVM" ]; then
     dnf install -y virtualbox-guest-additions
   fi
 else
-  echo "${NAME_SH}: Unknown Hypervisor.."
+  echo "==> ${NAME_SH}: Unknown Hypervisor.."
 fi
 echo "==> Setup stage end.."
