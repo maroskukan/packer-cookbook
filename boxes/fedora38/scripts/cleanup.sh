@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 set -e
-if [ -n "$BUILD_DEBUG" ] && set -x
+
+if [ "${BUILD_DEBUG}" ]; then
+  set -x
+fi
 
 NAME_SH=cleanup.sh
 
@@ -17,7 +20,7 @@ fi
 echo "==> ${NAME_SH}: Cleaning up yum cache and history.."
 dnf -y clean all
 rm -rf /var/lib/dnf/history.sqlite*
-dnf history
+dnf history > /dev/null
 
 # Remove artifacts from installation
 echo "==> ${NAME_SH}: Cleaning installation artifacts.."
@@ -37,12 +40,12 @@ rm -rf /var/tmp/* /tmp/* /var/cache/dnf/* /tmp/ks-script*
 
 # Whiteout root.
 echo "==> ${NAME_SH}: Whiting out the root partition.."
-dd if=/dev/zero of=/tmp/whitespace bs=16M || true
+dd if=/dev/zero of=/tmp/whitespace bs=16M 2>/dev/null || true
 rm /tmp/whitespace
 
 # Whiteout /boot.
 echo "==> ${NAME_SH}: Whiting out the boot partition.."
-dd if=/dev/zero of=/boot/whitespace bs=16M || true
+dd if=/dev/zero of=/boot/whitespace bs=16M 2>/dev/null || true
 rm /boot/whitespace
 
 

@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 set -e
-if [ -n "$BUILD_DEBUG" ] && set -x
+
+if [ "${BUILD_DEBUG}" ]; then
+  set -x
+fi
 
 NAME_SH=vagrant.sh
 

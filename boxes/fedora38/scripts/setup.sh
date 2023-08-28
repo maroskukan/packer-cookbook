@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
 set -e
-if [ -n "$BUILD_DEBUG" ] && set -x
+
+if [ "${BUILD_DEBUG}" ]; then
+  set -x
+fi
 
 NAME_SH=setup.sh
 
 echo "==> ${NAME_SH}: Setup stage start.."
+
+echo "==> ${NAME_SH}: Installing packages.."
+dnf install -y git which
 
 # Hypervisor Specific Packages
 HYPERVISOR=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`

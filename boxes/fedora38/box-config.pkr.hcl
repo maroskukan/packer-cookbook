@@ -55,6 +55,11 @@ variable "no_proxy" {
   default = "${env("no_proxy")}"
 }
 
+variable "build_debug" {
+  type    = string
+  default = "${env("build_debug")}"
+}
+
 variable "iso_urls" {
   type    = list(string)
   default = ["iso/Fedora-Server-netinst-x86_64-38-1.6.iso", "https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-1.6.iso"]
@@ -181,13 +186,14 @@ build {
   sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi"]
 
   provisioner "shell" {
+    environment_vars  = ["BUILD_DEBUG=${var.build_debug}"]
     execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh '{{ .Path }}'"
     scripts           = ["scripts/update.sh"]
     expect_disconnect = true
   }
   provisioner "shell" {
     pause_before      = "120s"
-    environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
+    environment_vars  = ["HOME_DIR=/home/vagrant", "BUILD_DEBUG=${var.build_debug}", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh '{{ .Path }}'"
     scripts           = ["scripts/setup.sh", "scripts/vagrant.sh", "scripts/cleanup.sh"]
     expect_disconnect = true

@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 
 set -e
-if [ -n "$BUILD_DEBUG" ] && set -x
+
+if [ "${BUILD_DEBUG}" ]; then
+  set -x
+fi
 
 NAME_SH=update.sh
 
 echo "==> ${NAME_SH}: Update stage start.."
 
 echo "==> ${NAME_SH}: Updating list of packages and upgrading all packages.."
-dnf update
+dnf update -y
 dnf upgrade -y
 
 # Boot to new kernel if applicable
