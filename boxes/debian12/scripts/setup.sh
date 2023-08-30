@@ -14,6 +14,8 @@ HYPERVISOR=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
 
 if [ "${HYPERVISOR}" = "Microsoft Hyper-V" ]; then
   echo "==> ${NAME_SH}: Microsoft Hyper-V Detected.."
+
+  echo "==> ${NAME_SH}: Installing rsync.."
   apt-get install -y rsync
 elif [ "${HYPERVISOR}" = "VMware" ]; then
   echo "==> ${NAME_SH}: VMware Workstation Detected.."
