@@ -80,7 +80,7 @@ source "hyperv-iso" "efi" {
                            "initrd /install.amd/initrd.gz<enter><wait>",
                            "boot<enter>"
                           ]
-  boot_wait             = "5s"
+  boot_wait             = "10s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
