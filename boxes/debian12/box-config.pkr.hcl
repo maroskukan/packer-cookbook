@@ -9,6 +9,10 @@ packer {
       version = ">= 1.0.8"
       source  = "github.com/hashicorp/vmware"
     }
+    virtualbox = {
+      version = ">= 1.0.5"
+      source = "github.com/hashicorp/virtualbox"
+    }
   }
 }
 
@@ -51,6 +55,11 @@ variable "no_proxy" {
   default = "${env("no_proxy")}"
 }
 
+variable "release" {
+  type    = string
+  default = "${env("release")}"
+}
+
 variable "iso_urls" {
   type = list(string)
   default = ["iso/debian-12.1.0-amd64-netinst.iso", "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.1.0-amd64-netinst.iso"]
@@ -71,7 +80,7 @@ source "hyperv-iso" "efi" {
                            "initrd /install.amd/initrd.gz<enter><wait>",
                            "boot<enter>"
                           ]
-  boot_wait             = "5s"
+  boot_wait             = "10s"
   communicator          = "ssh"
   vm_name               = "packer-${var.name}"
   cpus                  = "${var.cpus}"
@@ -141,12 +150,56 @@ source "vmware-iso" "efi" {
   shutdown_command      = "echo 'vagrant' | sudo -S /usr/sbin/shutdown -P now"
 }
 
+source "virtualbox-iso" "efi" {
+  boot_command          = [
+                           "c",
+                           "linux /install.amd/vmlinuz ",
+                           "auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+                           "priority=critical ",
+                           "--- net.ifnames=0 biosdevname=0<enter>",
+                           "initrd /install.amd/initrd.gz<enter><wait>",
+                           "boot<enter>"
+                          ]
+  boot_wait             = "10s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  iso_interface         = "sata"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  firmware              = "efi"
+  vboxmanage            = [
+                            ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"],    
+                            ["modifyvm", "{{.Name}}", "--vram", "64"]
+                          ]
+  guest_os_type         = "Debian_64"
+  guest_additions_mode  = "disable"
+  hard_drive_interface  = "sata"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
+  shutdown_command      = "echo 'vagrant' | sudo -S /usr/sbin/shutdown -P now"
+}
+
 build {
-  sources = ["hyperv-iso.efi", "vmware-iso.efi"]
+  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi"]
 
   provisioner "shell" {
+    environment_vars  = ["DEBIAN_RELEASE=${var.release}"]
+    execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E /bin/bash -eu '{{ .Path }}'"
+    scripts           = ["scripts/update.sh"]
+    expect_disconnect = true
+  }
+  provisioner "shell" {
+    pause_before      = "120s"
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-    execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
+    execute_command   = "echo 'vagrant' | {{ .Vars }} sudo -S -E /bin/bash -eu '{{ .Path }}'"
     scripts           = ["scripts/setup.sh", "scripts/vagrant.sh", "scripts/cleanup.sh"]
     expect_disconnect = true
   }

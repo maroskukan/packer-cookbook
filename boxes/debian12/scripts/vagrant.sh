@@ -1,20 +1,24 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 
-pubkey_url="https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub";
-mkdir -p $HOME_DIR/.ssh;
-if command -v wget >/dev/null 2>&1; then
-    wget --no-check-certificate "$pubkey_url" -O $HOME_DIR/.ssh/authorized_keys;
-elif command -v curl >/dev/null 2>&1; then
-    curl --insecure --location "$pubkey_url" > $HOME_DIR/.ssh/authorized_keys;
-else
-    echo "Cannot download vagrant public key";
-    exit 1;
-fi
-chown -R vagrant $HOME_DIR/.ssh;
-chmod -R go-rwsx $HOME_DIR/.ssh;
+NAME_SH=vagrant.sh
 
-sed -i -e '/Defaults\s\+env_reset/a Defaults\texempt_group=sudo' /etc/sudoers;
+echo "==> ${NAME_SH}: Vagrant stage start.."
 
-# Set up password-less sudo for the vagrant user
-echo 'vagrant ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/99_vagrant;
-chmod 440 /etc/sudoers.d/99_vagrant;
+# Public key setup
+echo "==> ${NAME_SH}: Downloading and installing public key.."
+mkdir -pm 700 $HOME_DIR/.ssh
+PUBKEY_URL="https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub"
+wget --no-check-certificate -O $HOME_DIR/.ssh/authorized_keys $PUBKEY_URL
+chmod 0600 $HOME_DIR/.ssh/authorized_keys
+chown -R vagrant:vagrant "${HOME_DIR}/.ssh"
+
+# Passwordless sudo setup
+echo "==> ${NAME_SH}: Updating sudo configuration.."
+cat <<-EOF > /etc/sudoers.d/99_vagrant
+Defaults:vagrant !fqdn
+Defaults:vagrant !requiretty
+vagrant ALL=(ALL) NOPASSWD: ALL
+EOF
+chmod 0440 /etc/sudoers.d/99_vagrant
+
+echo "==> ${NAME_SH}: Vagrant stage end.."

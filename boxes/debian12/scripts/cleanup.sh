@@ -1,59 +1,52 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 
+NAME_SH=setup.sh
 
-# Delete virtual box tools artifacts if present
-if [ "$PACKER_BUILDER_TYPE" = "virtualbox-iso" ]; then
-    if [ -f "$HOME/VBoxGuestAdditions.iso" ]; then
-    rm -f "$HOME/VBoxGuestAdditions.iso"
-    fi
+echo "==> ${NAME_SH}: Cleanup stage start.."
+
+export DEBIAN_FRONTEND=noninteractive
+
+# Remove any old kernels and modules
+echo "==> ${NAME_SH}: Removing any old kernels and modules.."
+if [[ `dpkg -l | grep -c 'linux-image-[0-9]'` != 1 ]]; then
+  apt-get -y purge $(dpkg -l | grep 'linux-image-[0-9]' | awk '{print $2}' | grep -v $(uname -r))
 fi
 
-# Remove docs
-rm -rf /usr/share/doc/*
+# Clean up apt
+echo "==> ${NAME_SH}: Cleaning up apt cache.."
+apt-get clean
 
-# Remove caches
-find /var/cache -type f -exec rm -rf {} \;
+# Remove artifacts from installation
+echo "==> ${NAME_SH}: Cleaning installation artifacts.."
+rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /root/debian-installer-logs/*
 
-# truncate any logs that have built up during the install
+# Clear the random seed.
+echo "==> ${NAME_SH}: Clearing random seed.."
+rm -f /var/lib/systemd/random-seed
+
+# Truncate the log files.
+echo "==> ${NAME_SH}: Truncating the log files.."
 find /var/log -type f -exec truncate --size=0 {} \;
 
-# Blank netplan machine-id (DUID) so machines get unique ID generated on boot.
-truncate -s 0 /etc/machine-id
+# Wipe the temp directory.
+echo "==> ${NAME_SH}: Cleaning the setup files and temporary files.."
+rm -rf /var/tmp/* /tmp/* /var/cache/apt/* /tmp/debian-installer-script*
 
-# remove the contents of /tmp and /var/tmp
-rm -rf /tmp/* /var/tmp/*
-
-# Clear the history
-export HISTSIZE=0
-rm -f /root/.wget-hsts
-
-# Whiteout root
-count=$(df --sync -kP / | tail -n1  | awk -F ' ' '{print $4}')
-count=$(($count-1))
-dd if=/dev/zero of=/tmp/whitespace bs=1M count=$count || echo "dd exit code $? is suppressed";
+# Whiteout root.
+echo "==> ${NAME_SH}: Whiting out the root partition.."
+dd if=/dev/zero of=/tmp/whitespace bs=16M 2>/dev/null || true
 rm /tmp/whitespace
 
-# Whiteout /boot
-count=$(df --sync -kP /boot | tail -n1 | awk -F ' ' '{print $4}')
-count=$(($count-1))
-dd if=/dev/zero of=/boot/whitespace bs=1M count=$count || echo "dd exit code $? is suppressed";
+# Whiteout /boot.
+echo "==> ${NAME_SH}: Whiting out the boot partition.."
+dd if=/dev/zero of=/boot/whitespace bs=16M 2>/dev/null || true
 rm /boot/whitespace
 
-set +e
-swapuuid="`/sbin/blkid -o value -l -s UUID -t TYPE=swap`";
-case "$?" in
-    2|0) ;;
-    *) exit 1 ;;
-esac
-set -e
+# Clear the command history.
+echo "==> ${NAME_SH}: Cleaning up the history.."
+export HISTSIZE=0
 
-if [ "x${swapuuid}" != "x" ]; then
-    # Whiteout the swap partition to reduce box size
-    # Swap is disabled till reboot
-    swappart="`readlink -f /dev/disk/by-uuid/$swapuuid`";
-    /sbin/swapoff "$swappart";
-    dd if=/dev/zero of="$swappart" bs=1M || echo "dd exit code $? is suppressed";
-    /sbin/mkswap -U "$swapuuid" "$swappart";
-fi
+# Flush in-memory data to disk
+sync
 
-sync;
+echo "==> ${NAME_SH}: Cleanup stage end.."
