@@ -6,11 +6,15 @@ echo "==> ${NAME_SH}: Setup stage start.."
 
 export DEBIAN_FRONTEND=noninteractive
 
+echo "==> ${NAME_SH}: Installing packages.."
+apt-get install -y git gnu-which
+
 HYPERVISOR=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
 
 
 if [ "${HYPERVISOR}" = "Microsoft Hyper-V" ]; then
   echo "==> ${NAME_SH}: Microsoft Hyper-V Detected.."
+  apt-get install -y rsync
 elif [ "${HYPERVISOR}" = "VMware" ]; then
   echo "==> ${NAME_SH}: VMware Workstation Detected.."
 

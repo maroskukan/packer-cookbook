@@ -46,6 +46,7 @@ rm /boot/whitespace
 echo "==> ${NAME_SH}: Cleaning up the history.."
 export HISTSIZE=0
 
+# Flush in-memory data to disk
 sync
-sleep 300
+
 echo "==> ${NAME_SH}: Cleanup stage end.."
