@@ -10,7 +10,7 @@ packer {
       source  = "github.com/hashicorp/vmware"
     }
     virtualbox = {
-      verion = ">= 1.0.5"
+      version = ">= 1.0.5"
       source = "github.com/hashicorp/virtualbox"
     }
   }
@@ -177,6 +177,7 @@ source "virtualbox-iso" "efi" {
   ssh_timeout           = "3600s"
   firmware              = "efi"
   vboxmanage            = [
+                            ["modifyvm", "{{.Name}}", "--nat-localhostreachable1", "on"],    
                             ["modifyvm", "{{.Name}}", "--vram", "64"]
                           ]
   guest_os_type         = "Debian_64"

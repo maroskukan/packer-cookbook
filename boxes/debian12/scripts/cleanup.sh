@@ -32,14 +32,14 @@ find /var/log -type f -exec truncate --size=0 {} \;
 echo "==> ${NAME_SH}: Cleaning the setup files and temporary files.."
 rm -rf /var/tmp/* /tmp/* /var/cache/apt/* /tmp/debian-installer-script*
 
-# Whiteout root
+# Whiteout root.
 echo "==> ${NAME_SH}: Whiting out the root partition.."
-dd if=/dev/zero of=/tmp/whitespace bs=16M || true
+dd if=/dev/zero of=/tmp/whitespace bs=16M 2>/dev/null || true
 rm /tmp/whitespace
 
-# Whiteout /boot
+# Whiteout /boot.
 echo "==> ${NAME_SH}: Whiting out the boot partition.."
-dd if=/dev/zero of=/boot/whitespace bs=16M || true
+dd if=/dev/zero of=/boot/whitespace bs=16M 2>/dev/null || true
 rm /boot/whitespace
 
 # Clear the command history.
