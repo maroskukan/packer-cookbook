@@ -27,19 +27,15 @@ elif [ "${HYPERVISOR}" = "KVM" ]; then
     echo "==> ${NAME_SH}: Downloading and installing Guest Additions.."
     wget -q https://download.virtualbox.org/virtualbox/7.0.10/VBoxGuestAdditions_7.0.10.iso
     mount VBoxGuestAdditions_7.0.10.iso /media
-    # wget -q https://download.virtualbox.org/virtualbox/6.1.46/VBoxGuestAdditions_6.1.46.iso
-    # mount VBoxGuestAdditions_6.1.46.iso /media
     /media/VBoxLinuxAdditions.run || echo "VBoxLinuxAdditions.run exit code $? is suppressed";
     
     echo "==> ${NAME_SH}: Unmounting and removing the iso and build tools.." 
     umount /media
     rm -rf VBoxGuestAdditions_7.0.10.iso
-    # rm -rf VBoxGuestAdditions_6.1.46.iso
     apt-get purge -y linux-headers-$(uname -r) gcc make perl
-    apt autoremove -y
-
+    apt-get autoremove -y
     echo "==> ${NAME_SH}: Applying fix for BdsDxe: Failed to load Boot0001"
-    #echo 'FS0:\EFI\debian\grubx64.efi' > /boot/efi/startup.nsh
+    # Fix for weak EFI implementation
     # https://wiki.debian.org/GrubEFIReinstall
     mkdir -p /boot/efi/EFI/BOOT
     cp /boot/efi/EFI/debian/grubx64.efi /boot/efi/EFI/BOOT/bootx64.efi
