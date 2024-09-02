@@ -30,6 +30,14 @@ Vagrant.configure("2") do |config|
     v.cpus = 2
   end
 
+  # Libvirt Provider Specific Configuration
+  config.vm.provider "libvirt" do |v|
+    v.title = "vagrant-ubuntu2304"
+    v.memory = 2048
+    v.cpus = 2
+    v.loader = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
+  end
+
   config.vm.define "ubuntu2304" do |ubuntu2304|
     # VM Shared Configuration
     ubuntu2304.vm.box = "maroskukan/ubuntu2304"
@@ -51,6 +59,12 @@ Vagrant.configure("2") do |config|
     # Virtualbox VM Specific Configuration
     ubuntu2304.vm.provider 'virtualbox' do |v, override|
       override.vm.box = "file://builds/ubuntu2304-virtualbox.box"
+      override.vm.synced_folder ".", "/vagrant", disabled: true
+    end
+
+    # Libvirt VM Specific Configuration
+    ubuntu2304.vm.provider 'libvirt' do |v, override|
+      override.vm.box = "file://builds/ubuntu2304-libvirt.box"
       override.vm.synced_folder ".", "/vagrant", disabled: true
     end
   end
