@@ -29,3 +29,9 @@ apt-get -y purge unattended-upgrades;
 
 # Upgrade all installed packages
 apt-get -y upgrade;
+
+# Install qemu helper daemon
+if [ "$PACKER_BUILDER_TYPE" = "qemu" ]; then
+    apt-get -y install qemu-guest-agent;
+    systemctl enable qemu-guest-agent;
+fi
