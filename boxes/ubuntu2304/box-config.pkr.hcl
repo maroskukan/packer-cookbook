@@ -9,6 +9,18 @@ packer {
       version = ">= 1.0.8"
       source  = "github.com/hashicorp/vmware"
     }
+    virtualbox = {
+      version  = ">= 1.1.1"
+      source   = "github.com/hashicorp/virtualbox"
+    }
+    qemu = {
+      version = ">= 1.1.0"
+      source  = "github.com/hashicorp/qemu"
+    }
+    vagrant ={
+      version = ">= 1.1.4"
+      source  = "github.com/hashicorp/vagrant"
+    }
   }
 }
 
@@ -168,8 +180,47 @@ source "virtualbox-iso" "efi" {
   shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
 }
 
+source "qemu" "efi" {
+  boot_command          = [
+                           "c",
+                           "linux /casper/vmlinuz autoinstall net.ifnames=0 biosdevname=0 ",
+                           "ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' --- <enter><wait>",
+                           "initrd /casper/initrd<enter><wait>",
+                           "boot<enter>"
+                          ]
+  boot_wait             = "5s"
+  communicator          = "ssh"
+  vm_name               = "packer-${var.name}"
+  cpus                  = "${var.cpus}"
+  memory                = "${var.memory}"
+  disk_size             = "${var.disk_size}"
+  disk_discard          = "unmap"
+  disk_detect_zeroes    = "on"
+  disk_cache            = "unsafe"
+  disk_image            = false
+  disk_compression      = true
+  disk_interface        = "virtio-scsi"
+  format                = "qcow2"
+  net_device            = "virtio-net"
+  iso_urls              = "${var.iso_urls}"
+  iso_checksum          = "${var.iso_checksum}"
+  headless              = false
+  http_directory        = "http"
+  ssh_username          = "vagrant"
+  ssh_password          = "vagrant"
+  ssh_port              = 22
+  ssh_timeout           = "3600s"
+  efi_boot              = true
+  efi_firmware_code     = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
+  efi_firmware_vars     = "/usr/share/edk2/ovmf/OVMF_VARS.fd"
+  machine_type          = "q35"
+  accelerator           = "kvm"
+  output_directory      = "builds/${var.name}-${source.name}-${source.type}"
+  shutdown_command      = "echo 'vagrant' | sudo -S shutdown -P now"
+}
+
 build {
-  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi"]
+  sources = ["hyperv-iso.efi", "vmware-iso.efi", "virtualbox-iso.efi", "qemu.efi"]
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/vagrant", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
